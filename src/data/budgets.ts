@@ -7,7 +7,7 @@ export async function getBudgets(year_month: string): Promise<Budget[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from('budgets')
-    .select('*, category:categories(id, name, is_active)')
+    .select('*, category:categories(id, name, is_active, color)')
     .eq('year_month', year_month)
     .order('created_at');
   if (error) throw new Error(error.message);
@@ -31,7 +31,7 @@ export async function upsertBudget(payload: {
       { ...payload, user_id: user.id },
       { onConflict: 'user_id,category_id,year_month' }
     )
-    .select('*, category:categories(id, name, is_active)')
+    .select('*, category:categories(id, name, is_active, color)')
     .single();
   if (error) throw new Error(error.message);
   return data;
