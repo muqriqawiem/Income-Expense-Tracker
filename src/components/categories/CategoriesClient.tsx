@@ -26,6 +26,8 @@ export default function CategoriesClient({ categories }: Props) {
   const [deleteTarget, setDeleteTarget] = useState<Category | null>(null);
   const [newName, setNewName] = useState('');
   const [editName, setEditName] = useState('');
+  const [newColor, setNewColor] = useState('#3b82f6')
+  const [editColor, setEditColor] = useState('#3b82f6')
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -36,7 +38,7 @@ export default function CategoriesClient({ categories }: Props) {
     if (!newName.trim()) { setError('Name is required.'); return; }
     setSaving(true);
     try {
-      await createCategory(newName.trim());
+      await createCategory(newName.trim(), newColor);
       setNewName('');
       setShowAdd(false);
       startTransition(() => router.refresh());
@@ -54,7 +56,7 @@ export default function CategoriesClient({ categories }: Props) {
     if (!editName.trim()) { setError('Name is required.'); return; }
     setSaving(true);
     try {
-      await updateCategory(editTarget.id, { name: editName.trim() });
+      await updateCategory(editTarget.id, { name: editName.trim(), color: editColor });
       setEditTarget(null);
       startTransition(() => router.refresh());
     } catch (err: unknown) {
@@ -93,7 +95,7 @@ export default function CategoriesClient({ categories }: Props) {
   return (
     <>
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px' }}>
-        <Button variant="primary" onClick={() => { setShowAdd(true); setError(''); setNewName(''); }}>
+        <Button variant="primary" onClick={() => { setShowAdd(true); setError(''); setNewName(''); setNewColor('#3b82f6'); }}>
           + Add Category
         </Button>
       </div>
@@ -118,7 +120,7 @@ export default function CategoriesClient({ categories }: Props) {
                 <td style={{ fontWeight: 500 }}>{cat.name}</td>
                 <td>
                   <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
-                    <Button size="sm" variant="ghost" onClick={() => { setEditTarget(cat); setEditName(cat.name); setError(''); }}>
+                    <Button size="sm" variant="ghost" onClick={() => { setEditTarget(cat); setEditName(cat.name); setError(''); setEditColor(cat.color); }}>
                       Edit
                     </Button>
                     <Button size="sm" variant="secondary" onClick={() => handleToggleActive(cat)}>
@@ -188,6 +190,26 @@ export default function CategoriesClient({ categories }: Props) {
                 autoFocus
               />
             </div>
+
+            <div className="form-group">
+              <label className="form-label">
+                Category Color
+              </label>
+
+              <input
+                type="color"
+                value={newColor}
+                onChange={(e) => setNewColor(e.target.value)}
+                style={{
+                  width: '60px',
+                  height: '40px',
+                  padding: 0,
+                  border: 'none',
+                  cursor: 'pointer',
+                }}
+              />
+            </div>
+            
             {error && <p className="form-error">{error}</p>}
             <div className="modal-actions">
               <Button variant="ghost" type="button" onClick={() => setShowAdd(false)}>Cancel</Button>
@@ -210,6 +232,26 @@ export default function CategoriesClient({ categories }: Props) {
                 autoFocus
               />
             </div>
+
+            <div className="form-group">
+              <label className="form-label">
+                Category Color
+              </label>
+
+              <input
+                type="color"
+                value={editColor}
+                onChange={(e) => setEditColor(e.target.value)}
+                style={{
+                  width: '60px',
+                  height: '40px',
+                  padding: 0,
+                  border: 'none',
+                  cursor: 'pointer',
+                }}
+              />
+            </div>
+            
             {error && <p className="form-error">{error}</p>}
             <div className="modal-actions">
               <Button variant="ghost" type="button" onClick={() => setEditTarget(null)}>Cancel</Button>
