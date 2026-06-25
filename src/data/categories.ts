@@ -12,7 +12,7 @@ export async function getCategories(activeOnly = false): Promise<Category[]> {
   return data ?? [];
 }
 
-export async function createCategory(name: string): Promise<Category> {
+export async function createCategory(name: string, color: string): Promise<Category> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -20,7 +20,7 @@ export async function createCategory(name: string): Promise<Category> {
   if (!user) throw new Error('Not authenticated');
   const { data, error } = await supabase
     .from('categories')
-    .insert({ name: name.trim(), user_id: user.id })
+    .insert({ name: name.trim(), user_id: user.id, color })
     .select()
     .single();
   if (error) throw new Error(error.message);
@@ -29,7 +29,7 @@ export async function createCategory(name: string): Promise<Category> {
 
 export async function updateCategory(
   id: string,
-  updates: Partial<Pick<Category, 'name' | 'is_active'>>
+  updates: Partial<Pick<Category, 'name' | 'is_active' | 'color'>>
 ): Promise<Category> {
   const supabase = await createClient();
   const { data, error } = await supabase
