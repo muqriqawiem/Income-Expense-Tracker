@@ -82,7 +82,7 @@ export async function getBudgetSummaryRows(
     const allocated = Number(b.allocated_budget);
     return {
       category_id: b.category_id,
-      category_name: (b.category as { name: string } | null)?.name ?? '—',
+      category_name: (b.category as unknown as { name: string } | null)?.name ?? '—',
       allocated_budget: allocated,
       spent,
       remaining: allocated - spent,
