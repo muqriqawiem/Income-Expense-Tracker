@@ -8,7 +8,7 @@ interface Props {
 
 function usedColor(pct: number): string {
   if (pct >= 100) return 'var(--expense)';
-  if (pct >= 80)  return 'var(--warning)';
+  if (pct >= 80) return 'var(--warning)';
   return 'var(--income)';
 }
 
@@ -30,9 +30,28 @@ export default function BudgetSummaryTable({ rows }: Props) {
   }
 
   return (
-    <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-      <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)' }}>
-        <h2 style={{ fontSize: '0.9rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)' }}>
+    <div
+      className="card"
+      style={{
+        padding: 0,
+        overflow: 'hidden',
+      }}
+    >
+      <div
+        style={{
+          padding: '16px 20px',
+          borderBottom: '1px solid var(--border)',
+        }}
+      >
+        <h2
+          style={{
+            fontSize: '0.9rem',
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            color: 'var(--text-muted)',
+          }}
+        >
           Category Budget Summary
         </h2>
       </div>
@@ -48,32 +67,98 @@ export default function BudgetSummaryTable({ rows }: Props) {
               <th>Used %</th>
             </tr>
           </thead>
+
           <tbody>
             {rows.map((row) => {
               const pct = Math.min(row.used_percent, 100);
               const color = usedColor(row.used_percent);
+
+              const categoryColor =
+                row.category_color || '#6b7280';
+
               return (
                 <tr key={row.category_id}>
-                  <td style={{ fontWeight: 500 }}>{row.category_name}</td>
-                  <td className="text-right font-mono">{formatRM(row.allocated_budget)}</td>
-                  <td className="text-right font-mono" style={{ color: 'var(--expense)' }}>
-                    {formatRM(row.spent)}
+                  <td>
+                    <span
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: '4px 10px',
+                        borderRadius: '999px',
+                        backgroundColor: `${categoryColor}20`,
+                        color: categoryColor,
+                        fontSize: '0.8rem',
+                        fontWeight: 600,
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: '8px',
+                          height: '8px',
+                          borderRadius: '50%',
+                          backgroundColor: categoryColor,
+                          display: 'inline-block',
+                        }}
+                      />
+                      {row.category_name}
+                    </span>
                   </td>
+
+                  <td className="text-right font-mono">
+                    {formatRM(row.allocated_budget)}
+                  </td>
+
                   <td
                     className="text-right font-mono"
-                    style={{ color: row.remaining < 0 ? 'var(--expense)' : 'var(--income)' }}
+                    style={{
+                      color: 'var(--expense)',
+                    }}
+                  >
+                    {formatRM(row.spent)}
+                  </td>
+
+                  <td
+                    className="text-right font-mono"
+                    style={{
+                      color:
+                        row.remaining < 0
+                          ? 'var(--expense)'
+                          : 'var(--income)',
+                    }}
                   >
                     {formatRM(row.remaining)}
                   </td>
+
                   <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <div className="progress-bar" style={{ flex: 1 }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                      }}
+                    >
+                      <div
+                        className="progress-bar"
+                        style={{ flex: 1 }}
+                      >
                         <div
                           className="progress-bar-fill"
-                          style={{ width: `${pct}%`, background: color }}
+                          style={{
+                            width: `${pct}%`,
+                            background: color,
+                          }}
                         />
                       </div>
-                      <span style={{ fontSize: '0.8rem', fontWeight: 600, color, minWidth: '40px' }}>
+
+                      <span
+                        style={{
+                          fontSize: '0.8rem',
+                          fontWeight: 600,
+                          color,
+                          minWidth: '40px',
+                        }}
+                      >
                         {row.used_percent.toFixed(0)}%
                       </span>
                     </div>
