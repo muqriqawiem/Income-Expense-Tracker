@@ -8,6 +8,7 @@ export interface Category {
   name: string;
   is_active: boolean;
   created_at: string;
+  color: string;
 }
 
 export interface Transaction {
@@ -20,7 +21,7 @@ export interface Transaction {
   description: string | null;
   year_month: string;
   created_at: string;
-  category?: Pick<Category, 'id' | 'name' | 'is_active'>;
+  category?: Pick<Category, 'id' | 'name' | 'is_active' | 'color'>;
 }
 
 export interface Budget {
@@ -30,7 +31,7 @@ export interface Budget {
   year_month: string;
   allocated_budget: number;
   created_at: string;
-  category?: Pick<Category, 'id' | 'name' | 'is_active'>;
+  category?: Pick<Category, 'id' | 'name' | 'is_active' | 'color'>;
 }
 
 export interface FinancialOverview {
@@ -48,6 +49,7 @@ export interface BudgetSummaryRow {
   spent: number;
   remaining: number;
   used_percent: number;
+  category_color: string;
 }
 
 export interface TransactionFormData {
