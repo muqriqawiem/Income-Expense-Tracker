@@ -10,7 +10,7 @@ export async function getTransactions(filters?: {
   const supabase = await createClient();
   let query = supabase
     .from('transactions')
-    .select('*, category:categories(id, name, is_active)')
+    .select('*, category:categories(id, name, is_active, color)')
     .order('transaction_date', { ascending: false })
     .order('created_at', { ascending: false });
 
