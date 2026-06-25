@@ -3,7 +3,11 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { createTransaction, updateTransaction, deleteTransaction } from '@/data/transactions';
+import {
+  createTransaction,
+  updateTransaction,
+  deleteTransaction,
+} from '@/data/transactions';
 import { formatRM } from '@/lib/utils/currency';
 import { todayISO } from '@/lib/utils/date';
 import Button from '@/components/ui/Button';
@@ -71,11 +75,21 @@ export default function TransactionTableClient({
     setError('');
 
     const amount = parseFloat(form.amount);
-    if (!form.transaction_date) { setError('Date is required.'); return; }
-    if (!form.category_id)      { setError('Category is required.'); return; }
-    if (isNaN(amount) || amount <= 0) { setError('Enter a valid amount.'); return; }
+    if (!form.transaction_date) {
+      setError('Date is required.');
+      return;
+    }
+    if (!form.category_id) {
+      setError('Category is required.');
+      return;
+    }
+    if (isNaN(amount) || amount <= 0) {
+      setError('Enter a valid amount.');
+      return;
+    }
 
     setSaving(true);
+
     try {
       const payload = {
         transaction_date: form.transaction_date,
@@ -90,6 +104,7 @@ export default function TransactionTableClient({
       } else {
         await createTransaction(payload);
       }
+
       closeForm();
       startTransition(() => router.refresh());
     } catch (err: unknown) {
@@ -102,6 +117,7 @@ export default function TransactionTableClient({
   async function handleDelete() {
     if (!deleteTarget) return;
     setDeleting(true);
+
     try {
       await deleteTransaction(deleteTarget.id);
       setDeleteTarget(null);
@@ -117,8 +133,10 @@ export default function TransactionTableClient({
     <>
       <div className="page-header" style={{ marginBottom: '16px' }}>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-          {transactions.length} transaction{transactions.length !== 1 ? 's' : ''}
+          {transactions.length} transaction
+          {transactions.length !== 1 ? 's' : ''}
         </p>
+
         <Button variant="primary" onClick={openAdd}>
           + Add Transaction
         </Button>
@@ -144,38 +162,100 @@ export default function TransactionTableClient({
                 <th style={{ width: '80px' }}></th>
               </tr>
             </thead>
+
             <tbody>
-              {transactions.map((t) => (
-                <tr key={t.id}>
-                  <td style={{ whiteSpace: 'nowrap' }}>{t.transaction_date}</td>
-                  <td>
-                    <span className={`badge badge-${t.type.toLowerCase()}`}>{t.type}</span>
-                  </td>
-                  <td>{t.category?.name ?? <span className="text-muted">—</span>}</td>
-                  <td
-                    className="text-right font-mono"
-                    style={{
-                      color: t.type === 'Income' ? 'var(--income)' : 'var(--expense)',
-                      fontWeight: 600,
-                    }}
-                  >
-                    {formatRM(Number(t.amount))}
-                  </td>
-                  <td style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                    {t.description ?? '—'}
-                  </td>
-                  <td>
-                    <div style={{ display: 'flex', gap: '6px' }}>
-                      <Button size="sm" variant="ghost" onClick={() => openEdit(t)}>
-                        Edit
-                      </Button>
-                      <Button size="sm" variant="danger" onClick={() => setDeleteTarget(t)}>
-                        Del
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {transactions.map((t) => {
+                const categoryColor = t.category?.color ?? '#6b7280';
+
+                return (
+                  <tr key={t.id}>
+                    <td style={{ whiteSpace: 'nowrap' }}>
+                      {t.transaction_date}
+                    </td>
+
+                    <td>
+                      <span
+                        className={`badge badge-${t.type.toLowerCase()}`}
+                      >
+                        {t.type}
+                      </span>
+                    </td>
+
+                    {/* CATEGORY PILL */}
+                    <td>
+                      {t.category ? (
+                        <span
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            padding: '4px 10px',
+                            borderRadius: '999px',
+                            backgroundColor: `${categoryColor}20`,
+                            color: categoryColor,
+                            fontSize: '0.8rem',
+                            fontWeight: 600,
+                          }}
+                        >
+                          <span
+                            style={{
+                              width: '8px',
+                              height: '8px',
+                              borderRadius: '50%',
+                              backgroundColor: categoryColor,
+                            }}
+                          />
+                          {t.category.name}
+                        </span>
+                      ) : (
+                        <span className="text-muted">—</span>
+                      )}
+                    </td>
+
+                    <td
+                      className="text-right font-mono"
+                      style={{
+                        color:
+                          t.type === 'Income'
+                            ? 'var(--income)'
+                            : 'var(--expense)',
+                        fontWeight: 600,
+                      }}
+                    >
+                      {formatRM(Number(t.amount))}
+                    </td>
+
+                    <td
+                      style={{
+                        color: 'var(--text-muted)',
+                        fontSize: '0.85rem',
+                      }}
+                    >
+                      {t.description ?? '—'}
+                    </td>
+
+                    <td>
+                      <div style={{ display: 'flex', gap: '6px' }}>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => openEdit(t)}
+                        >
+                          Edit
+                        </Button>
+
+                        <Button
+                          size="sm"
+                          variant="danger"
+                          onClick={() => setDeleteTarget(t)}
+                        >
+                          Del
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -193,8 +273,12 @@ export default function TransactionTableClient({
               <input
                 type="date"
                 value={form.transaction_date}
-                onChange={(e) => setForm({ ...form, transaction_date: e.target.value })}
-                required
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    transaction_date: e.target.value,
+                  })
+                }
               />
             </div>
 
@@ -202,7 +286,14 @@ export default function TransactionTableClient({
               <label className="form-label">Type</label>
               <select
                 value={form.type}
-                onChange={(e) => setForm({ ...form, type: e.target.value as 'Income' | 'Expense' })}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    type: e.target.value as
+                      | 'Income'
+                      | 'Expense',
+                  })
+                }
               >
                 <option value="Income">Income</option>
                 <option value="Expense">Expense</option>
@@ -213,47 +304,76 @@ export default function TransactionTableClient({
               <label className="form-label">Category</label>
               <select
                 value={form.category_id}
-                onChange={(e) => setForm({ ...form, category_id: e.target.value })}
-                required
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    category_id: e.target.value,
+                  })
+                }
               >
                 <option value="">Select category…</option>
                 {categories.map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
                 ))}
               </select>
             </div>
 
             <div className="form-group">
-              <label className="form-label">Amount (RM)</label>
+              <label className="form-label">
+                Amount (RM)
+              </label>
               <input
                 type="number"
                 step="0.01"
-                min="0.01"
                 value={form.amount}
-                onChange={(e) => setForm({ ...form, amount: e.target.value })}
-                placeholder="0.00"
-                required
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    amount: e.target.value,
+                  })
+                }
               />
             </div>
 
             <div className="form-group">
-              <label className="form-label">Description (optional)</label>
+              <label className="form-label">
+                Description
+              </label>
               <input
                 type="text"
                 value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
-                placeholder="Notes…"
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    description: e.target.value,
+                  })
+                }
               />
             </div>
 
-            {error && <p className="form-error">{error}</p>}
+            {error && (
+              <p className="form-error">{error}</p>
+            )}
 
             <div className="modal-actions">
-              <Button variant="ghost" type="button" onClick={closeForm}>
+              <Button
+                variant="ghost"
+                type="button"
+                onClick={closeForm}
+              >
                 Cancel
               </Button>
-              <Button variant="primary" type="submit" loading={saving}>
-                {editTarget ? 'Save changes' : 'Add transaction'}
+
+              <Button
+                variant="primary"
+                type="submit"
+                loading={saving}
+              >
+                {editTarget
+                  ? 'Save changes'
+                  : 'Add transaction'}
               </Button>
             </div>
           </form>
@@ -264,7 +384,11 @@ export default function TransactionTableClient({
       {deleteTarget && (
         <ConfirmDialog
           title="Delete transaction?"
-          message={`This will permanently delete the ${deleteTarget.type.toLowerCase()} of ${formatRM(Number(deleteTarget.amount))} on ${deleteTarget.transaction_date}.`}
+          message={`This will permanently delete the ${deleteTarget.type.toLowerCase()} of ${formatRM(
+            Number(deleteTarget.amount)
+          )} on ${
+            deleteTarget.transaction_date
+          }.`}
           onConfirm={handleDelete}
           onCancel={() => setDeleteTarget(null)}
           loading={deleting}
