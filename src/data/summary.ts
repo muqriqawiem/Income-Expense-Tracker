@@ -58,7 +58,7 @@ export async function getBudgetSummaryRows(
     await Promise.all([
       supabase
         .from('budgets')
-        .select('category_id, allocated_budget, category:categories(name)')
+        .select('category_id, allocated_budget, category:categories(name, color)')
         .eq('year_month', year_month),
       supabase
         .from('transactions')
@@ -83,6 +83,7 @@ export async function getBudgetSummaryRows(
     return {
       category_id: b.category_id,
       category_name: (b.category as unknown as { name: string } | null)?.name ?? '—',
+      category_color: (b.category as unknown as { color: string } | null)?.color ?? '#6b7280',
       allocated_budget: allocated,
       spent,
       remaining: allocated - spent,
