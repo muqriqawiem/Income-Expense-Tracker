@@ -38,7 +38,7 @@ export async function createTransaction(payload: {
   const { data, error } = await supabase
     .from('transactions')
     .insert({ ...payload, user_id: user.id })
-    .select('*, category:categories(id, name, is_active)')
+    .select('*, category:categories(id, name, is_active, color)')
     .single();
   if (error) throw new Error(error.message);
   return data;
@@ -59,7 +59,7 @@ export async function updateTransaction(
     .from('transactions')
     .update(payload)
     .eq('id', id)
-    .select('*, category:categories(id, name, is_active)')
+    .select('*, category:categories(id, name, is_active, color)')
     .single();
   if (error) throw new Error(error.message);
   return data;
