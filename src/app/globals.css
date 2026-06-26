@@ -84,7 +84,7 @@ th {
 
 tr:hover td { background: rgba(255,255,255,0.02); }
 
-/* Layout */
+/* ── Layout ─────────────────────────────────────────────────── */
 .layout { display: flex; min-height: 100vh; }
 
 .main-content {
@@ -92,13 +92,23 @@ tr:hover td { background: rgba(255,255,255,0.02); }
   margin-left: var(--sidebar-w);
   padding: 32px;
   max-width: 1200px;
+  /* Smooth shift when sidebar collapses */
+  transition: margin-left 0.22s ease;
+  /* Prevent overflow on small screens */
+  min-width: 0;
 }
 
 @media (max-width: 768px) {
-  .main-content { margin-left: 0; padding: 16px; padding-top: 72px; }
+  .main-content {
+    margin-left: 0 !important;
+    padding: 16px;
+    padding-top: 72px;
+    /* Full width on mobile */
+    max-width: 100%;
+  }
 }
 
-/* Cards */
+/* ── Cards ───────────────────────────────────────────────────── */
 .card {
   background: var(--bg-surface);
   border: 1px solid var(--border);
@@ -106,27 +116,39 @@ tr:hover td { background: rgba(255,255,255,0.02); }
   padding: 20px 24px;
 }
 
-/* Grid */
+/* ── Overview grid ───────────────────────────────────────────── */
 .overview-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
   margin-bottom: 28px;
 }
 
-/* Page header */
+@media (max-width: 480px) {
+  .overview-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+}
+
+/* ── Page header ─────────────────────────────────────────────── */
 .page-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 24px;
-  gap: 16px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
 .page-title { font-size: 1.4rem; font-weight: 700; }
 
-/* Badges */
+@media (max-width: 480px) {
+  .page-title { font-size: 1.2rem; }
+  .page-header { margin-bottom: 16px; }
+}
+
+/* ── Badges ──────────────────────────────────────────────────── */
 .badge {
   display: inline-block;
   padding: 2px 8px;
@@ -140,13 +162,13 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 .badge-active  { background: var(--income-soft);  color: var(--income); }
 .badge-inactive{ background: var(--bg-raised);    color: var(--text-muted); }
 
-/* Progress bar */
+/* ── Progress bar ────────────────────────────────────────────── */
 .progress-bar {
   height: 6px;
   background: var(--bg-raised);
   border-radius: 99px;
   overflow: hidden;
-  min-width: 80px;
+  min-width: 60px;
 }
 .progress-bar-fill {
   height: 100%;
@@ -154,7 +176,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
   transition: width 0.3s;
 }
 
-/* Auth page */
+/* ── Auth page ───────────────────────────────────────────────── */
 .auth-page {
   min-height: 100vh;
   display: flex;
@@ -170,6 +192,10 @@ tr:hover td { background: rgba(255,255,255,0.02); }
   padding: 40px;
   width: 100%;
   max-width: 400px;
+}
+
+@media (max-width: 480px) {
+  .auth-card { padding: 28px 20px; }
 }
 
 .auth-title {
@@ -209,7 +235,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 
 .form-link:hover { text-decoration: underline; }
 
-/* Utility */
+/* ── Utility ─────────────────────────────────────────────────── */
 .text-muted   { color: var(--text-muted); }
 .text-income  { color: var(--income); }
 .text-expense { color: var(--expense); }
@@ -237,7 +263,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 
 .empty-state p { margin-top: 8px; font-size: 0.9rem; }
 
-/* Modal overlay */
+/* ── Modal ───────────────────────────────────────────────────── */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -260,6 +286,10 @@ tr:hover td { background: rgba(255,255,255,0.02); }
   overflow-y: auto;
 }
 
+@media (max-width: 480px) {
+  .modal-box { padding: 20px 16px; }
+}
+
 .modal-title {
   font-size: 1.1rem;
   font-weight: 700;
@@ -273,7 +303,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
   margin-top: 24px;
 }
 
-/* Filters bar */
+/* ── Filters bar ─────────────────────────────────────────────── */
 .filters-bar {
   display: flex;
   gap: 10px;
@@ -282,9 +312,14 @@ tr:hover td { background: rgba(255,255,255,0.02); }
   align-items: flex-end;
 }
 
-.filters-bar .form-group { margin-bottom: 0; min-width: 160px; }
+.filters-bar .form-group { margin-bottom: 0; min-width: 140px; }
 
-/* Search input */
+@media (max-width: 480px) {
+  .filters-bar { gap: 8px; }
+  .filters-bar .form-group { min-width: 100%; }
+}
+
+/* ── Search input ────────────────────────────────────────────── */
 .search-input-wrap { position: relative; }
 .search-input-wrap input { padding-left: 32px; }
 .search-icon {
@@ -294,4 +329,14 @@ tr:hover td { background: rgba(255,255,255,0.02); }
   transform: translateY(-50%);
   color: var(--text-muted);
   pointer-events: none;
+}
+
+/* ── Table scroll on mobile ──────────────────────────────────── */
+@media (max-width: 640px) {
+  .card table {
+    font-size: 0.82rem;
+  }
+  th, td {
+    padding: 8px 10px;
+  }
 }
