@@ -17,6 +17,33 @@ interface Props {
   categories: Category[];
 }
 
+function CategoryPill({ color, name, inactive }: { color: string; name: string; inactive?: boolean }) {
+  return (
+    <span style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '6px',
+      padding: '4px 10px',
+      borderRadius: '999px',
+      backgroundColor: `${color}20`,
+      color: color,
+      fontSize: '0.8rem',
+      fontWeight: 600,
+      opacity: inactive ? 0.5 : 1,
+    }}>
+      <span style={{
+        width: '8px',
+        height: '8px',
+        borderRadius: '50%',
+        backgroundColor: color,
+        display: 'inline-block',
+        flexShrink: 0,
+      }} />
+      {name}
+    </span>
+  );
+}
+
 export default function CategoriesClient({ categories }: Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -26,8 +53,8 @@ export default function CategoriesClient({ categories }: Props) {
   const [deleteTarget, setDeleteTarget] = useState<Category | null>(null);
   const [newName, setNewName] = useState('');
   const [editName, setEditName] = useState('');
-  const [newColor, setNewColor] = useState('#3b82f6')
-  const [editColor, setEditColor] = useState('#3b82f6')
+  const [newColor, setNewColor] = useState('#3b82f6');
+  const [editColor, setEditColor] = useState('#3b82f6');
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -100,7 +127,6 @@ export default function CategoriesClient({ categories }: Props) {
         </Button>
       </div>
 
-      {/* Active */}
       <div className="card" style={{ padding: 0, overflow: 'hidden', marginBottom: '20px' }}>
         <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h2 style={{ fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)' }}>
@@ -117,7 +143,9 @@ export default function CategoriesClient({ categories }: Props) {
           <tbody>
             {active.map((cat) => (
               <tr key={cat.id}>
-                <td style={{ fontWeight: 500 }}>{cat.name}</td>
+                <td>
+                  <CategoryPill color={cat.color} name={cat.name} />
+                </td>
                 <td>
                   <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
                     <Button size="sm" variant="ghost" onClick={() => { setEditTarget(cat); setEditName(cat.name); setError(''); setEditColor(cat.color); }}>
@@ -140,7 +168,6 @@ export default function CategoriesClient({ categories }: Props) {
         </table>
       </div>
 
-      {/* Inactive */}
       {inactive.length > 0 && (
         <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
           <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)' }}>
@@ -158,15 +185,13 @@ export default function CategoriesClient({ categories }: Props) {
             <tbody>
               {inactive.map((cat) => (
                 <tr key={cat.id}>
-                  <td style={{ color: 'var(--text-muted)' }}>{cat.name}</td>
+                  <td>
+                    <CategoryPill color={cat.color} name={cat.name} inactive />
+                  </td>
                   <td>
                     <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
-                      <Button size="sm" variant="secondary" onClick={() => handleToggleActive(cat)}>
-                        Activate
-                      </Button>
-                      <Button size="sm" variant="danger" onClick={() => setDeleteTarget(cat)}>
-                        Del
-                      </Button>
+                      <Button size="sm" variant="secondary" onClick={() => handleToggleActive(cat)}>Activate</Button>
+                      <Button size="sm" variant="danger" onClick={() => setDeleteTarget(cat)}>Del</Button>
                     </div>
                   </td>
                 </tr>
@@ -176,40 +201,17 @@ export default function CategoriesClient({ categories }: Props) {
         </div>
       )}
 
-      {/* Add Modal */}
       {showAdd && (
         <Modal title="Add Category" onClose={() => setShowAdd(false)}>
           <form onSubmit={handleCreate}>
             <div className="form-group">
               <label className="form-label">Category Name</label>
-              <input
-                type="text"
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                placeholder="e.g. Food, Transport…"
-                autoFocus
-              />
+              <input type="text" value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="e.g. Food, Transport…" autoFocus />
             </div>
-
             <div className="form-group">
-              <label className="form-label">
-                Category Color
-              </label>
-
-              <input
-                type="color"
-                value={newColor}
-                onChange={(e) => setNewColor(e.target.value)}
-                style={{
-                  width: '60px',
-                  height: '40px',
-                  padding: 0,
-                  border: 'none',
-                  cursor: 'pointer',
-                }}
-              />
+              <label className="form-label">Category Color</label>
+              <input type="color" value={newColor} onChange={(e) => setNewColor(e.target.value)} style={{ width: '60px', height: '40px', padding: 0, border: 'none', cursor: 'pointer' }} />
             </div>
-            
             {error && <p className="form-error">{error}</p>}
             <div className="modal-actions">
               <Button variant="ghost" type="button" onClick={() => setShowAdd(false)}>Cancel</Button>
@@ -219,39 +221,17 @@ export default function CategoriesClient({ categories }: Props) {
         </Modal>
       )}
 
-      {/* Edit Modal */}
       {editTarget && (
         <Modal title="Edit Category" onClose={() => setEditTarget(null)}>
           <form onSubmit={handleUpdate}>
             <div className="form-group">
               <label className="form-label">Category Name</label>
-              <input
-                type="text"
-                value={editName}
-                onChange={(e) => setEditName(e.target.value)}
-                autoFocus
-              />
+              <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} autoFocus />
             </div>
-
             <div className="form-group">
-              <label className="form-label">
-                Category Color
-              </label>
-
-              <input
-                type="color"
-                value={editColor}
-                onChange={(e) => setEditColor(e.target.value)}
-                style={{
-                  width: '60px',
-                  height: '40px',
-                  padding: 0,
-                  border: 'none',
-                  cursor: 'pointer',
-                }}
-              />
+              <label className="form-label">Category Color</label>
+              <input type="color" value={editColor} onChange={(e) => setEditColor(e.target.value)} style={{ width: '60px', height: '40px', padding: 0, border: 'none', cursor: 'pointer' }} />
             </div>
-            
             {error && <p className="form-error">{error}</p>}
             <div className="modal-actions">
               <Button variant="ghost" type="button" onClick={() => setEditTarget(null)}>Cancel</Button>
@@ -261,7 +241,6 @@ export default function CategoriesClient({ categories }: Props) {
         </Modal>
       )}
 
-      {/* Delete Confirm */}
       {deleteTarget && (
         <ConfirmDialog
           title="Delete category?"
