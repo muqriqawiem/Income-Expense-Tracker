@@ -15,20 +15,72 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: 'center',
     justifyContent: 'center',
     gap: '6px',
-    borderRadius: '8px',
+
+    borderRadius: '12px',
+
     fontWeight: 600,
-    transition: 'opacity 0.15s, background 0.15s',
-    cursor: 'pointer',
-    border: 'none',
     fontFamily: 'inherit',
+
+    cursor: 'pointer',
+
     whiteSpace: 'nowrap',
+
+    transition:
+      'all 0.18s ease',
+
+    backdropFilter: 'blur(12px)',
+    WebkitBackdropFilter: 'blur(12px)',
   },
-  primary: { background: '#5b8dee', color: '#fff' },
-  secondary: { background: '#22263a', color: '#e8eaf6', border: '1px solid #2e3347' },
-  danger: { background: '#f05252', color: '#fff' },
-  ghost: { background: 'transparent', color: '#7c82a0' },
-  sm: { padding: '5px 12px', fontSize: '0.8rem' },
-  md: { padding: '8px 16px', fontSize: '0.875rem' },
+
+  primary: {
+    background: 'var(--accent)',
+    color: '#ffffff',
+
+    border: '1px solid rgba(255,255,255,0.08)',
+
+    boxShadow:
+      '0 4px 20px rgba(56,189,248,0.25)',
+  },
+
+  secondary: {
+    background: 'rgba(255,255,255,0.05)',
+
+    color: 'var(--text)',
+
+    border: '1px solid var(--border)',
+
+    boxShadow:
+      '0 4px 20px rgba(0,0,0,0.12)',
+  },
+
+  danger: {
+    background: 'rgba(244,63,94,0.15)',
+
+    color: 'var(--expense)',
+
+    border: '1px solid rgba(244,63,94,0.25)',
+
+    boxShadow:
+      '0 4px 20px rgba(244,63,94,0.15)',
+  },
+
+  ghost: {
+    background: 'transparent',
+
+    color: 'var(--text-muted)',
+
+    border: '1px solid transparent',
+  },
+
+  sm: {
+    padding: '6px 12px',
+    fontSize: '0.8rem',
+  },
+
+  md: {
+    padding: '9px 16px',
+    fontSize: '0.875rem',
+  },
 };
 
 export default function Button({
@@ -48,9 +100,54 @@ export default function Button({
         ...styles.base,
         ...styles[variant],
         ...styles[size],
+
         width: fullWidth ? '100%' : undefined,
+
         opacity: disabled || loading ? 0.6 : 1,
+
         ...style,
+      }}
+      onMouseEnter={(e) => {
+        if (disabled || loading) return;
+
+        const target = e.currentTarget;
+
+        target.style.transform = 'translateY(-1px)';
+
+        if (variant === 'primary') {
+          target.style.boxShadow =
+            '0 8px 24px rgba(56,189,248,0.35)';
+        }
+
+        if (variant === 'secondary') {
+          target.style.background =
+            'rgba(255,255,255,0.08)';
+        }
+
+        if (variant === 'danger') {
+          target.style.background =
+            'rgba(244,63,94,0.22)';
+        }
+      }}
+      onMouseLeave={(e) => {
+        const target = e.currentTarget;
+
+        target.style.transform = 'translateY(0)';
+
+        if (variant === 'primary') {
+          target.style.boxShadow =
+            '0 4px 20px rgba(56,189,248,0.25)';
+        }
+
+        if (variant === 'secondary') {
+          target.style.background =
+            'rgba(255,255,255,0.05)';
+        }
+
+        if (variant === 'danger') {
+          target.style.background =
+            'rgba(244,63,94,0.15)';
+        }
       }}
       {...props}
     >
