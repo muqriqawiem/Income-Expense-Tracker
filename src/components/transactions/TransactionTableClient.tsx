@@ -14,6 +14,7 @@ import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import type { Transaction, Category, TransactionFormData } from '@/types';
+import { exportTransactionsToExcel } from '@/lib/utils/exportToExcel';
 
 interface Props {
   transactions: Transaction[];
@@ -68,6 +69,17 @@ export default function TransactionTableClient({
   function closeForm() {
     setShowForm(false);
     setEditTarget(null);
+  }
+
+  function handleExport() {
+    const rows = transactions.map((t) => ({
+      Date: t.transaction_date,
+      Type: t.type,
+      Category: t.category?.name ?? 'Uncategorized',
+      Description: t.description ?? '',
+      Amount: Number(t.amount),
+    }));
+    exportTransactionsToExcel(rows, `transactions-${selectedMonth}`);
   }
 
   async function handleSave(e: React.FormEvent) {
@@ -137,9 +149,19 @@ export default function TransactionTableClient({
           {transactions.length !== 1 ? 's' : ''}
         </p>
 
-        <Button variant="primary" onClick={openAdd}>
-          + Add Transaction
-        </Button>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <Button
+            variant="ghost"
+            onClick={handleExport}
+            disabled={transactions.length === 0}
+          >
+            ↓ Export Excel
+          </Button>
+
+          <Button variant="primary" onClick={openAdd}>
+            + Add Transaction
+          </Button>
+        </div>
       </div>
 
       {transactions.length === 0 ? (
