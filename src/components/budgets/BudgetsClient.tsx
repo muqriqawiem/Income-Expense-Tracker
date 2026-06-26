@@ -3,7 +3,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { upsertBudget, deleteBudget } from '@/data/budgets';
+import { upsertBudget, deleteBudget, copyBudgetsFromMonth } from '@/data/budgets';
 import { formatRM } from '@/lib/utils/currency';
 import { formatMonthLabel } from '@/lib/utils/date';
 import Button from '@/components/ui/Button';
@@ -16,6 +16,12 @@ interface Props {
   categories: Category[];
   selectedMonth: string;
   monthOptions: string[];
+}
+
+function getPreviousMonth(yearMonth: string): string {
+  const [year, month] = yearMonth.split('-').map(Number);
+  const prev = new Date(year, month - 2, 1);
+  return `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, '0')}`;
 }
 
 export default function BudgetsClient({
@@ -36,6 +42,7 @@ export default function BudgetsClient({
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [copying, setCopying] = useState(false);
 
   function switchMonth(month: string) {
     router.push(`${pathname}?month=${month}`);
@@ -59,7 +66,7 @@ export default function BudgetsClient({
     e.preventDefault();
     setError('');
     const amount = parseFloat(formAmount);
-    if (!formCategoryId)          { setError('Select a category.'); return; }
+    if (!formCategoryId)             { setError('Select a category.'); return; }
     if (isNaN(amount) || amount < 0) { setError('Enter a valid amount.'); return; }
 
     setSaving(true);
@@ -93,6 +100,23 @@ export default function BudgetsClient({
     }
   }
 
+  async function handleCopyFromPrevious() {
+    setCopying(true);
+    try {
+      const prevMonth = getPreviousMonth(selectedMonth);
+      const copied = await copyBudgetsFromMonth(prevMonth, selectedMonth);
+      if (copied.length === 0) {
+        alert(`No budgets found for ${formatMonthLabel(prevMonth)} to copy from.`);
+      } else {
+        startTransition(() => router.refresh());
+      }
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : 'Copy failed. Please try again.');
+    } finally {
+      setCopying(false);
+    }
+  }
+
   // Categories that don't have a budget yet in this month
   const budgetedCategoryIds = new Set(budgets.map((b) => b.category_id));
   const availableCategories = categories.filter((c) => !budgetedCategoryIds.has(c.id));
@@ -101,7 +125,7 @@ export default function BudgetsClient({
 
   return (
     <>
-      {/* Month selector + Add button */}
+      {/* Month selector + action buttons */}
       <div className="filters-bar" style={{ marginBottom: '20px' }}>
         <div className="form-group">
           <label className="form-label">Month</label>
@@ -111,7 +135,12 @@ export default function BudgetsClient({
             ))}
           </select>
         </div>
-        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'flex-end' }}>
+        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'flex-end', gap: '8px' }}>
+          {budgets.length === 0 && (
+            <Button variant="ghost" onClick={handleCopyFromPrevious} disabled={copying}>
+              {copying ? 'Copying…' : 'Copy from previous month'}
+            </Button>
+          )}
           <Button variant="primary" onClick={openAdd} disabled={availableCategories.length === 0}>
             + Set Budget
           </Button>
