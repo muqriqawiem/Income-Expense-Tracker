@@ -63,8 +63,11 @@ export default function Sidebar() {
           left: 0,
           width: `${sidebarW}px`,
           height: '100vh',
-          background: 'var(--bg-surface)',
-          borderRight: '1px solid var(--border)',
+          background: 'rgba(15, 23, 42, 0.75)',
+          borderRight: '1px solid rgba(255,255,255,0.08)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          boxShadow: '0 0 40px rgba(0,0,0,0.25)',
           display: 'flex',
           flexDirection: 'column',
           zIndex: 50,
@@ -79,11 +82,11 @@ export default function Sidebar() {
           alignItems: 'center',
           justifyContent: collapsed ? 'center' : 'space-between',
           padding: collapsed ? '0' : '0 14px 0 20px',
-          borderBottom: '1px solid var(--border)',
+          borderBottom: '1px solid rgba(255,255,255,0.08)',
           flexShrink: 0,
         }}>
           {!collapsed && (
-            <span style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--accent)', whiteSpace: 'nowrap', overflow: 'hidden' }}>
+            <span style={{ fontWeight: 700, fontSize: '0.95rem', color: '#67E8F9', whiteSpace: 'nowrap', overflow: 'hidden' }}>
               FinanceTracker
             </span>
           )}
@@ -98,15 +101,16 @@ export default function Sidebar() {
               alignItems: 'center',
               justifyContent: 'center',
               color: 'var(--text-muted)',
-              background: 'transparent',
-              border: 'none',
+              background: 'rgba(255,255,255,0.03)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              backdropFilter: 'blur(8px)',
               cursor: 'pointer',
               flexShrink: 0,
               fontSize: '1rem',
               transition: 'background 0.15s, color 0.15s',
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-raised)';
+              (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.05)';
               (e.currentTarget as HTMLButtonElement).style.color = 'var(--text)';
             }}
             onMouseLeave={(e) => {
@@ -137,8 +141,10 @@ export default function Sidebar() {
                   marginBottom: '2px',
                   fontWeight: active ? 600 : 400,
                   color: active ? 'var(--text)' : 'var(--text-muted)',
-                  background: active ? 'var(--bg-raised)' : 'transparent',
-                  transition: 'background 0.15s, color 0.15s',
+                  background: active ? 'rgba(56,189,248,0.12)' : 'transparent',
+                  border: active ? '1px solid rgba(56,189,248,0.20)' : '1px solid transparent',
+                  boxShadow: active ? '0 0 16px rgba(56,189,248,0.08)' : 'none',
+                  transition: 'all 0.18s ease',
                   fontSize: '0.875rem',
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
@@ -176,7 +182,7 @@ export default function Sidebar() {
               overflow: 'hidden',
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-raised)';
+              (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.05)';
             }}
             onMouseLeave={(e) => {
               (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
@@ -198,15 +204,17 @@ export default function Sidebar() {
           left: 0,
           right: 0,
           height: '56px',
-          background: 'var(--bg-surface)',
-          borderBottom: '1px solid var(--border)',
+          background: 'rgba(15, 23, 42, 0.75)',
+          borderBottom: '1px solid rgba(255,255,255,0.08)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: '0 16px',
           zIndex: 50,
         }}
       >
-        <span style={{ fontWeight: 700, color: 'var(--accent)', fontSize: '0.95rem' }}>FinanceTracker</span>
+        <span style={{ fontWeight: 700, color: '#67E8F9', fontSize: '0.95rem' }}>FinanceTracker</span>
         {/* Hamburger */}
         <button
           onClick={() => setDrawerOpen(true)}
@@ -218,8 +226,9 @@ export default function Sidebar() {
             alignItems: 'center',
             justifyContent: 'center',
             gap: '5px',
-            border: 'none',
-            background: 'none',
+            border: '1px solid rgba(255,255,255,0.08)',
+            background: 'rgba(255,255,255,0.03)',
+            backdropFilter: 'blur(8px)',
             cursor: 'pointer',
             borderRadius: '6px',
           }}
@@ -240,7 +249,9 @@ export default function Sidebar() {
             display: 'none',
             position: 'fixed',
             inset: 0,
-            background: 'rgba(0,0,0,0.55)',
+            background: 'rgba(2,6,23,0.65)',
+            backdropFilter: 'blur(4px)',
+            WebkitBackdropFilter: 'blur(4px)',
             zIndex: 90,
           }}
         />
@@ -255,8 +266,10 @@ export default function Sidebar() {
           left: 0,
           width: '260px',
           height: '100vh',
-          background: 'var(--bg-surface)',
-          borderRight: '1px solid var(--border)',
+          background: 'rgba(15, 23, 42, 0.85)',
+          borderRight: '1px solid rgba(255,255,255,0.08)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
           flexDirection: 'column',
           zIndex: 100,
           transform: drawerOpen ? 'translateX(0)' : 'translateX(-100%)',
@@ -270,10 +283,10 @@ export default function Sidebar() {
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: '0 16px',
-          borderBottom: '1px solid var(--border)',
+          borderBottom: '1px solid rgba(255,255,255,0.08)',
           flexShrink: 0,
         }}>
-          <span style={{ fontWeight: 700, color: 'var(--accent)', fontSize: '0.95rem' }}>FinanceTracker</span>
+          <span style={{ fontWeight: 700, color: '#67E8F9', fontSize: '0.95rem' }}>FinanceTracker</span>
           <button
             onClick={() => setDrawerOpen(false)}
             style={{
@@ -312,7 +325,10 @@ export default function Sidebar() {
                   marginBottom: '2px',
                   fontWeight: active ? 600 : 400,
                   color: active ? 'var(--text)' : 'var(--text-muted)',
-                  background: active ? 'var(--bg-raised)' : 'transparent',
+                  background: active ? 'rgba(56,189,248,0.12)' : 'transparent',
+                  border: active ? '1px solid rgba(56,189,248,0.20)' : '1px solid transparent',
+                  boxShadow: active ? '0 0 16px rgba(56,189,248,0.08)' : 'none',
+                  transition: 'all 0.18s ease',
                   fontSize: '0.9rem',
                   textDecoration: 'none',
                 }}
