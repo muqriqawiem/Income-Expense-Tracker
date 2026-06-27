@@ -1,4 +1,5 @@
 // src/app/(app)/dashboard/page.tsx
+
 import { getFinancialOverview, getBudgetSummaryRows } from '@/data/summary';
 import { generateMonthOptions, currentYearMonth } from '@/lib/utils/date';
 import { formatRM } from '@/lib/utils/currency';
@@ -28,10 +29,10 @@ positive === true
 
 const glowColor =
 positive === true
-? 'rgba(34,197,94,0.12)'
+? 'rgba(34, 197, 94, 0.12)'
 : positive === false
-? 'rgba(244,63,94,0.12)'
-: 'rgba(56,189,248,0.08)';
+? 'rgba(244, 63, 94, 0.12)'
+: 'rgba(56, 189, 248, 0.08)';
 
 return (
 <div
@@ -127,28 +128,20 @@ Dashboard </h1>
   <div className="overview-grid">
     <OverviewCard
       label="Total Income"
-      value={formatRM(
-        overview.total_income
-      )}
+      value={formatRM(overview.total_income)}
       positive={true}
     />
 
     <OverviewCard
       label="Total Expense"
-      value={formatRM(
-        overview.total_expense
-      )}
+      value={formatRM(overview.total_expense)}
       positive={false}
     />
 
     <OverviewCard
       label="Total Remaining"
-      value={formatRM(
-        overview.total_remaining
-      )}
-      positive={
-        overview.total_remaining >= 0
-      }
+      value={formatRM(overview.total_remaining)}
+      positive={overview.total_remaining >= 0}
     />
 
     <OverviewCard
@@ -160,12 +153,8 @@ Dashboard </h1>
 
     <OverviewCard
       label="Buffer"
-      value={formatRM(
-        overview.buffer
-      )}
-      positive={
-        overview.buffer >= 0
-      }
+      value={formatRM(overview.buffer)}
+      positive={overview.buffer >= 0}
     />
   </div>
 
