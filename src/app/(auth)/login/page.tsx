@@ -57,6 +57,11 @@ export default function LoginPage() {
               required
               autoComplete="current-password"
             />
+            <p style={{ marginTop: '6px', textAlign: 'right' }}>
+              <a href="/forgot-password" className="form-link" style={{ fontSize: '0.8rem' }}>
+                Forgot password
+              </a>
+            </p>
           </div>
 
           {error && <p className="form-error">{error}</p>}
