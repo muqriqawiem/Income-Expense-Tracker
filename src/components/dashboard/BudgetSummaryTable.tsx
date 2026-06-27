@@ -40,7 +40,10 @@ export default function BudgetSummaryTable({ rows }: Props) {
       <div
         style={{
           padding: '16px 20px',
-          borderBottom: '1px solid var(--border)',
+          borderBottom: '1px solid rgba(255,255,255,0.08)',
+          background: 'rgba(255,255,255,0.02)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
         }}
       >
         <h2
@@ -86,7 +89,10 @@ export default function BudgetSummaryTable({ rows }: Props) {
                         gap: '6px',
                         padding: '4px 10px',
                         borderRadius: '999px',
-                        backgroundColor: `${categoryColor}20`,
+                        backgroundColor: `${categoryColor}18`,
+                        border: `1px solid ${categoryColor}25`,
+                        backdropFilter: 'blur(8px)',
+                        WebkitBackdropFilter: 'blur(8px)',
                         color: categoryColor,
                         fontSize: '0.8rem',
                         fontWeight: 600,
@@ -147,6 +153,7 @@ export default function BudgetSummaryTable({ rows }: Props) {
                           style={{
                             width: `${pct}%`,
                             background: color,
+                            boxShadow: `0 0 8px ${color}55`,
                           }}
                         />
                       </div>
