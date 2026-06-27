@@ -24,6 +24,64 @@ function getPreviousMonth(yearMonth: string): string {
   return `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, '0')}`;
 }
 
+interface SummaryCardProps {
+  label: string;
+  value: string;
+  glowColor: string;
+}
+
+function SummaryCard({ label, value, glowColor }: SummaryCardProps) {
+  return (
+    <div
+      className="card"
+      style={{
+        padding: '20px',
+        position: 'relative',
+        overflow: 'hidden',
+        flex: 1,
+        minWidth: '160px',
+      }}
+    >
+      {/* Orb */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '-30px',
+          right: '-30px',
+          width: '80px',
+          height: '80px',
+          borderRadius: '50%',
+          background: glowColor,
+          filter: 'blur(20px)',
+          pointerEvents: 'none',
+        }}
+      />
+      <p
+        style={{
+          fontSize: '0.72rem',
+          fontWeight: 600,
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
+          color: 'var(--text-muted)',
+          marginBottom: '8px',
+        }}
+      >
+        {label}
+      </p>
+      <p
+        style={{
+          fontSize: '1.35rem',
+          fontWeight: 700,
+          color: 'var(--text)',
+          fontFamily: '"JetBrains Mono", "Fira Code", monospace',
+        }}
+      >
+        {value}
+      </p>
+    </div>
+  );
+}
+
 export default function BudgetsClient({
   budgets,
   categories,
@@ -173,26 +231,18 @@ export default function BudgetsClient({
         </div>
       </div>
 
-      {/* Summary */}
-      <div
-        className="card"
-        style={{
-          marginBottom: '20px',
-          display: 'flex',
-          gap: '32px',
-          flexWrap: 'wrap',
-          padding: '20px',
-        }}
-      >
-        <div>
-          <p style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>Total Allocated</p>
-          <p style={{ fontSize: '1.25rem', fontWeight: 700 }}>{formatRM(totalBudget)}</p>
-        </div>
-
-        <div>
-          <p style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>Categories Budgeted</p>
-          <p style={{ fontSize: '1.25rem', fontWeight: 700 }}>{budgets.length}</p>
-        </div>
+      {/* Summary cards — same orb design as Dashboard OverviewCards */}
+      <div className="overview-grid" style={{ marginBottom: '24px' }}>
+        <SummaryCard
+          label="Total Allocated"
+          value={formatRM(totalBudget)}
+          glowColor="rgba(56, 189, 248, 0.15)"
+        />
+        <SummaryCard
+          label="Categories Budgeted"
+          value={String(budgets.length)}
+          glowColor="rgba(139, 92, 246, 0.15)"
+        />
       </div>
 
       {/* Table / Empty state */}
