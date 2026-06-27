@@ -48,7 +48,7 @@ position: 'absolute',
 top: '-30px',
 right: '-30px',
 
-```
+
       width: '80px',
       height: '80px',
 
@@ -92,7 +92,7 @@ right: '-30px',
     {value}
   </p>
 </div>
-```
+
 
 );
 }
@@ -118,7 +118,7 @@ return (
 <> <div className="page-header"> <h1 className="page-title">
 Dashboard </h1>
 
-```
+
     <MonthSelector
       options={monthOptions}
       selected={selectedMonth}
@@ -160,7 +160,7 @@ Dashboard </h1>
 
   <BudgetSummaryTable rows={budgetRows} />
 </>
-```
+
 
 );
 }
