@@ -35,7 +35,7 @@ export async function middleware(request: NextRequest) {
 
   const isResetPage = pathname.startsWith('/reset-password');
 
-  if (!user && !isAuthPage && !isResetPage) {
+  if (!user && !isAuthPage) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
