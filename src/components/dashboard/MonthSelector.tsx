@@ -29,9 +29,8 @@ export default function MonthSelector({ options, selected }: Props) {
           </option>
         ))}
       </select>
-      <span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none', fontSize: '0.8rem' }}>
-        ▼
-      </span>
+      {/* <span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none', fontSize: '0.8rem' }}>
+      </span> */}
     </div>
   );
 }
