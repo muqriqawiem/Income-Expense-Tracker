@@ -185,12 +185,12 @@ export default function BudgetsClient({
         }}
       >
         <div>
-          <p style={{ fontSize: '0.72rem', fontWeight: 600 }}>Total Allocated</p>
+          <p style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>Total Allocated</p>
           <p style={{ fontSize: '1.25rem', fontWeight: 700 }}>{formatRM(totalBudget)}</p>
         </div>
 
         <div>
-          <p style={{ fontSize: '0.72rem', fontWeight: 600 }}>Categories budgeted</p>
+          <p style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>Categories Budgeted</p>
           <p style={{ fontSize: '1.25rem', fontWeight: 700 }}>{budgets.length}</p>
         </div>
       </div>
@@ -198,7 +198,10 @@ export default function BudgetsClient({
       {/* Table / Empty state */}
       {budgets.length === 0 ? (
         <div className="card">
-          <p>No budgets set for {formatMonthLabel(selectedMonth)}.</p>
+          <div className="empty-state">
+            <p style={{ fontSize: '1.5rem' }}>◎</p>
+            <p>No budgets set for {formatMonthLabel(selectedMonth)}.</p>
+          </div>
         </div>
       ) : (
         <div className="card" style={{ padding: 0 }}>
@@ -212,39 +215,53 @@ export default function BudgetsClient({
             </thead>
 
             <tbody>
-              {budgets.map((b) => (
-                <tr key={b.id}>
-                  <td>
-                    <span
-                      style={{
-                        display: 'inline-flex',
-                        padding: '4px 10px',
-                        borderRadius: '999px',
-                        fontWeight: 600,
-                      }}
-                    >
-                      {b.category?.name ?? '—'}
-                    </span>
-                  </td>
+              {budgets.map((b) => {
+                const categoryColor = b.category?.color ?? '#6b7280';
+                return (
+                  <tr key={b.id}>
+                    <td>
+                      <span
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          padding: '4px 10px',
+                          borderRadius: '999px',
+                          backgroundColor: `${categoryColor}20`,
+                          color: categoryColor,
+                          fontSize: '0.8rem',
+                          fontWeight: 600,
+                        }}
+                      >
+                        <span
+                          style={{
+                            width: '8px',
+                            height: '8px',
+                            borderRadius: '50%',
+                            backgroundColor: categoryColor,
+                          }}
+                        />
+                        {b.category?.name ?? '—'}
+                      </span>
+                    </td>
 
-                  {/* FIXED: removed stray </td> */}
+                    <td className="text-right font-mono" style={{ fontWeight: 600 }}>
+                      {formatRM(Number(b.allocated_budget))}
+                    </td>
 
-                  <td className="text-right" style={{ fontWeight: 600 }}>
-                    {formatRM(Number(b.allocated_budget))}
-                  </td>
-
-                  <td>
-                    <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
-                      <Button size="sm" variant="ghost" onClick={() => openEdit(b)}>
-                        Edit
-                      </Button>
-                      <Button size="sm" variant="danger" onClick={() => setDeleteTarget(b)}>
-                        Del
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                    <td>
+                      <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
+                        <Button size="sm" variant="ghost" onClick={() => openEdit(b)}>
+                          Edit
+                        </Button>
+                        <Button size="sm" variant="danger" onClick={() => setDeleteTarget(b)}>
+                          Del
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -254,43 +271,71 @@ export default function BudgetsClient({
       {showAdd && (
         <Modal title={`Set Budget — ${formatMonthLabel(selectedMonth)}`} onClose={() => setShowAdd(false)}>
           <form onSubmit={handleSave}>
-            <select value={formCategoryId} onChange={(e) => setFormCategoryId(e.target.value)}>
-              <option value="">Select category…</option>
-              {availableCategories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
+            <div className="form-group">
+              <label className="form-label">Category</label>
+              <select value={formCategoryId} onChange={(e) => setFormCategoryId(e.target.value)}>
+                <option value="">Select category…</option>
+                {availableCategories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-            <input
-              type="number"
-              value={formAmount}
-              onChange={(e) => setFormAmount(e.target.value)}
-            />
+            <div className="form-group">
+              <label className="form-label">Amount (RM)</label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="0.00"
+                value={formAmount}
+                onChange={(e) => setFormAmount(e.target.value)}
+              />
+            </div>
 
-            {error && <p>{error}</p>}
+            {error && <p className="form-error">{error}</p>}
 
-            <Button type="submit" loading={saving}>
-              Save
-            </Button>
+            <div className="modal-actions">
+              <Button variant="ghost" type="button" onClick={() => setShowAdd(false)}>
+                Cancel
+              </Button>
+              <Button variant="primary" type="submit" loading={saving}>
+                Save budget
+              </Button>
+            </div>
           </form>
         </Modal>
       )}
 
       {/* Edit Modal */}
       {editTarget && (
-        <Modal title="Edit Budget" onClose={() => setEditTarget(null)}>
+        <Modal title={`Edit Budget — ${editTarget.category?.name ?? ''}`} onClose={() => setEditTarget(null)}>
           <form onSubmit={handleSave}>
-            <input
-              type="number"
-              value={formAmount}
-              onChange={(e) => setFormAmount(e.target.value)}
-            />
+            <div className="form-group">
+              <label className="form-label">Amount (RM)</label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="0.00"
+                value={formAmount}
+                onChange={(e) => setFormAmount(e.target.value)}
+                autoFocus
+              />
+            </div>
 
-            <Button type="submit" loading={saving}>
-              Save changes
-            </Button>
+            {error && <p className="form-error">{error}</p>}
+
+            <div className="modal-actions">
+              <Button variant="ghost" type="button" onClick={() => setEditTarget(null)}>
+                Cancel
+              </Button>
+              <Button variant="primary" type="submit" loading={saving}>
+                Save changes
+              </Button>
+            </div>
           </form>
         </Modal>
       )}
