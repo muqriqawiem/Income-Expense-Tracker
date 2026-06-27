@@ -42,7 +42,6 @@ function SummaryCard({ label, value, glowColor }: SummaryCardProps) {
         minWidth: '160px',
       }}
     >
-      {/* Orb */}
       <div
         style={{
           position: 'absolute',
@@ -216,8 +215,12 @@ export default function BudgetsClient({
 
         <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
           {budgets.length === 0 && (
-            <Button variant="ghost" onClick={handleCopyFromPrevious} disabled={copying}>
-              {copying ? 'Copying…' : 'Copy from previous month'}
+            <Button
+              variant="secondary"
+              onClick={handleCopyFromPrevious}
+              disabled={copying}
+            >
+              {copying ? '⟳ Copying…' : '⎘ Copy from previous month'}
             </Button>
           )}
 
@@ -231,7 +234,7 @@ export default function BudgetsClient({
         </div>
       </div>
 
-      {/* Summary cards — same orb design as Dashboard OverviewCards */}
+      {/* Summary cards */}
       <div className="overview-grid" style={{ marginBottom: '24px' }}>
         <SummaryCard
           label="Total Allocated"
