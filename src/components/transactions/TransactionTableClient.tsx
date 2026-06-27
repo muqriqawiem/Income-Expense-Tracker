@@ -151,7 +151,7 @@ export default function TransactionTableClient({
 
         <div style={{ display: 'flex', gap: '8px' }}>
           <Button
-            variant="ghost"
+            variant="secondary"
             onClick={handleExport}
             disabled={transactions.length === 0}
           >
@@ -196,14 +196,11 @@ export default function TransactionTableClient({
                     </td>
 
                     <td>
-                      <span
-                        className={`badge badge-${t.type.toLowerCase()}`}
-                      >
+                      <span className={`badge badge-${t.type.toLowerCase()}`}>
                         {t.type}
                       </span>
                     </td>
 
-                    {/* CATEGORY PILL */}
                     <td>
                       {t.category ? (
                         <span
@@ -237,40 +234,23 @@ export default function TransactionTableClient({
                     <td
                       className="text-right font-mono"
                       style={{
-                        color:
-                          t.type === 'Income'
-                            ? 'var(--income)'
-                            : 'var(--expense)',
+                        color: t.type === 'Income' ? 'var(--income)' : 'var(--expense)',
                         fontWeight: 600,
                       }}
                     >
                       {formatRM(Number(t.amount))}
                     </td>
 
-                    <td
-                      style={{
-                        color: 'var(--text-muted)',
-                        fontSize: '0.85rem',
-                      }}
-                    >
+                    <td style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
                       {t.description ?? '—'}
                     </td>
 
                     <td>
                       <div style={{ display: 'flex', gap: '6px' }}>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => openEdit(t)}
-                        >
+                        <Button size="sm" variant="ghost" onClick={() => openEdit(t)}>
                           Edit
                         </Button>
-
-                        <Button
-                          size="sm"
-                          variant="danger"
-                          onClick={() => setDeleteTarget(t)}
-                        >
+                        <Button size="sm" variant="danger" onClick={() => setDeleteTarget(t)}>
                           Del
                         </Button>
                       </div>
@@ -295,12 +275,7 @@ export default function TransactionTableClient({
               <input
                 type="date"
                 value={form.transaction_date}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    transaction_date: e.target.value,
-                  })
-                }
+                onChange={(e) => setForm({ ...form, transaction_date: e.target.value })}
               />
             </div>
 
@@ -309,12 +284,7 @@ export default function TransactionTableClient({
               <select
                 value={form.type}
                 onChange={(e) =>
-                  setForm({
-                    ...form,
-                    type: e.target.value as
-                      | 'Income'
-                      | 'Expense',
-                  })
+                  setForm({ ...form, type: e.target.value as 'Income' | 'Expense' })
                 }
               >
                 <option value="Income">Income</option>
@@ -326,12 +296,7 @@ export default function TransactionTableClient({
               <label className="form-label">Category</label>
               <select
                 value={form.category_id}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    category_id: e.target.value,
-                  })
-                }
+                onChange={(e) => setForm({ ...form, category_id: e.target.value })}
               >
                 <option value="">Select category…</option>
                 {categories.map((c) => (
@@ -343,59 +308,32 @@ export default function TransactionTableClient({
             </div>
 
             <div className="form-group">
-              <label className="form-label">
-                Amount (RM)
-              </label>
+              <label className="form-label">Amount (RM)</label>
               <input
                 type="number"
                 step="0.01"
                 value={form.amount}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    amount: e.target.value,
-                  })
-                }
+                onChange={(e) => setForm({ ...form, amount: e.target.value })}
               />
             </div>
 
             <div className="form-group">
-              <label className="form-label">
-                Description
-              </label>
+              <label className="form-label">Description</label>
               <input
                 type="text"
                 value={form.description}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    description: e.target.value,
-                  })
-                }
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
               />
             </div>
 
-            {error && (
-              <p className="form-error">{error}</p>
-            )}
+            {error && <p className="form-error">{error}</p>}
 
             <div className="modal-actions">
-              <Button
-                variant="ghost"
-                type="button"
-                onClick={closeForm}
-              >
+              <Button variant="ghost" type="button" onClick={closeForm}>
                 Cancel
               </Button>
-
-              <Button
-                variant="primary"
-                type="submit"
-                loading={saving}
-              >
-                {editTarget
-                  ? 'Save changes'
-                  : 'Add transaction'}
+              <Button variant="primary" type="submit" loading={saving}>
+                {editTarget ? 'Save changes' : 'Add transaction'}
               </Button>
             </div>
           </form>
@@ -408,9 +346,7 @@ export default function TransactionTableClient({
           title="Delete transaction?"
           message={`This will permanently delete the ${deleteTarget.type.toLowerCase()} of ${formatRM(
             Number(deleteTarget.amount)
-          )} on ${
-            deleteTarget.transaction_date
-          }.`}
+          )} on ${deleteTarget.transaction_date}.`}
           onConfirm={handleDelete}
           onCancel={() => setDeleteTarget(null)}
           loading={deleting}
