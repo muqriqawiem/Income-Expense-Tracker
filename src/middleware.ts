@@ -31,10 +31,11 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/login') ||
     pathname.startsWith('/signup') ||
     pathname.startsWith('/forgot-password') ||
-    pathname.startsWith('/reset-password') ||
     pathname.startsWith('/auth/callback');
 
-  if (!user && !isAuthPage) {
+  const isResetPage = pathname.startsWith('/reset-password');
+
+  if (!user && !isAuthPage && !isResetPage) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
