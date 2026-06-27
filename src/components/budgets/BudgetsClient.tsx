@@ -148,12 +148,13 @@ export default function BudgetsClient({
       </div>
 
       {/* Summary strip */}
-      <div className="card" style={{ marginBottom: '20px', display: 'flex', gap: '32px', flexWrap: 'wrap' }}>
+      <div className="card" style={{ marginBottom: '20px', display: 'flex', gap: '32px', flexWrap: 'wrap', padding: '20px', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', top: '-40px', right: '-40px', width: '100px', height: '100px', borderRadius: '50%', background: 'rgba(56,189,248,0.08)', filter: 'blur(24px)', pointerEvents: 'none' }}/>
         <div>
           <p style={{ fontSize: '0.72rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)', marginBottom: '4px' }}>
             Total Allocated
           </p>
-          <p style={{ fontSize: '1.25rem', fontWeight: 700, fontFamily: 'monospace' }}>
+          <p style={{ fontSize: '1.25rem', fontWeight: 700, fontFamily: '"JetBrains Mono", "Fira Code", monospace', color: 'var(--accent)' }}>
             {formatRM(totalBudget)}
           </p>
         </div>
@@ -180,6 +181,11 @@ export default function BudgetsClient({
         </div>
       ) : (
         <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+          <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.02)' }}>
+            <h2 style={{ fontSize: '0.9rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)' }}>
+              Budget Allocation
+            </h2>
+          </div>
           <table>
             <thead>
               <tr>
@@ -191,8 +197,13 @@ export default function BudgetsClient({
             <tbody>
               {budgets.map((b) => (
                 <tr key={b.id}>
-                  <td style={{ fontWeight: 500 }}>{b.category?.name ?? '—'}</td>
-                  <td className="text-right font-mono" style={{ fontWeight: 600 }}>
+                  <td>
+                    <span style={{  display: 'inline-flex', alignItems: 'center', padding: '4px 10px', borderRadius: '999px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', fontWeight: 600 }}>
+                      {b.category?.name ?? '—'}
+                    </span>
+                  </td>
+                  </td>
+                  <td className="text-right font-mono" style={{ fontWeight: 600, color: 'var(--accent)' }}>
                     {formatRM(Number(b.allocated_budget))}
                   </td>
                   <td>
