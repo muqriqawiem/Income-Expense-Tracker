@@ -55,10 +55,10 @@ export default function BudgetSummaryTable({ rows }: Props) {
             fontSize: '0.8rem',
             transition: 'transform 0.2s ease',
             display: 'inline-block',
-            transform: open ? 'rotate(0deg)' : 'rotate(-90deg)',
+            transform: open ? 'rotate(90deg)' : 'rotate(0deg)',
           }}
         >
-          ▾
+          ›
         </span>
       </button>
 
