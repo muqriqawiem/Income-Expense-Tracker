@@ -9,17 +9,6 @@ export const metadata: Metadata = {
   description: 'Personal income & expense tracker',
 };
 
-// Inline script: sets data-theme BEFORE first paint to prevent flash
-const themeScript = `
-  (function() {
-    try {
-      var stored = localStorage.getItem('theme');
-      var system = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', stored || system);
-    } catch(e) {}
-  })();
-`;
-
 export default function RootLayout({
   children,
 }: {
@@ -28,8 +17,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        {/* Anti-flash: must run before body renders */}
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"
