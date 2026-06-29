@@ -4,7 +4,6 @@
 import { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import ThemeToggle from '@/components/ui/ThemeToggle';
 
 const NAV = [
   { href: '/dashboard',    label: 'Dashboard',     icon: '◈' },
@@ -20,21 +19,26 @@ export default function Sidebar() {
   const pathname  = usePathname();
   const router    = useRouter();
 
+  // Desktop: collapsed state
   const [collapsed, setCollapsed] = useState(() => {
     if (typeof window === 'undefined') return false;
     return localStorage.getItem('sidebar-collapsed') === 'true';
   });
 
+  // Mobile: drawer open state
   const [drawerOpen, setDrawerOpen] = useState(false);
 
+  // Sync collapsed pref to localStorage
   useEffect(() => {
     localStorage.setItem('sidebar-collapsed', String(collapsed));
+    // Update CSS variable so main content shifts correctly
     document.documentElement.style.setProperty(
       '--sidebar-w',
       `${collapsed ? COLLAPSED_W : EXPANDED_W}px`
     );
   }, [collapsed]);
 
+  // Close drawer on route change
   useEffect(() => {
     setDrawerOpen(false);
   }, [pathname]);
@@ -59,11 +63,11 @@ export default function Sidebar() {
           left: 0,
           width: `${sidebarW}px`,
           height: '100vh',
-          background: 'var(--sidebar-bg)',
-          borderRight: '1px solid var(--sidebar-border)',
+          background: 'rgba(15, 23, 42, 0.75)',
+          borderRight: '1px solid rgba(255,255,255,0.08)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
-          boxShadow: '0 0 40px rgba(0,0,0,0.15)',
+          boxShadow: '0 0 40px rgba(0,0,0,0.25)',
           display: 'flex',
           flexDirection: 'column',
           zIndex: 50,
@@ -78,11 +82,11 @@ export default function Sidebar() {
           alignItems: 'center',
           justifyContent: collapsed ? 'center' : 'space-between',
           padding: collapsed ? '0' : '0 14px 0 20px',
-          borderBottom: '1px solid var(--sidebar-border)',
+          borderBottom: '1px solid rgba(255,255,255,0.08)',
           flexShrink: 0,
         }}>
           {!collapsed && (
-            <span style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--accent)', whiteSpace: 'nowrap', overflow: 'hidden' }}>
+            <span style={{ fontWeight: 700, fontSize: '0.95rem', color: '#67E8F9', whiteSpace: 'nowrap', overflow: 'hidden' }}>
               FinanceTracker
             </span>
           )}
@@ -97,15 +101,16 @@ export default function Sidebar() {
               alignItems: 'center',
               justifyContent: 'center',
               color: 'var(--text-muted)',
-              background: 'rgba(128,128,128,0.04)',
-              border: '1px solid var(--border)',
+              background: 'rgba(255,255,255,0.03)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              backdropFilter: 'blur(8px)',
               cursor: 'pointer',
               flexShrink: 0,
               fontSize: '1rem',
               transition: 'background 0.15s, color 0.15s',
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.background = 'rgba(128,128,128,0.1)';
+              (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.05)';
               (e.currentTarget as HTMLButtonElement).style.color = 'var(--text)';
             }}
             onMouseLeave={(e) => {
@@ -136,9 +141,9 @@ export default function Sidebar() {
                   marginBottom: '2px',
                   fontWeight: active ? 600 : 400,
                   color: active ? 'var(--text)' : 'var(--text-muted)',
-                  background: active ? 'var(--sidebar-active-bg)' : 'transparent',
-                  border: active ? '1px solid var(--sidebar-active-border)' : '1px solid transparent',
-                  boxShadow: active ? 'var(--sidebar-active-shadow)' : 'none',
+                  background: active ? 'rgba(56,189,248,0.12)' : 'transparent',
+                  border: active ? '1px solid rgba(56,189,248,0.20)' : '1px solid transparent',
+                  boxShadow: active ? '0 0 16px rgba(56,189,248,0.08)' : 'none',
                   transition: 'all 0.18s ease',
                   fontSize: '0.875rem',
                   whiteSpace: 'nowrap',
@@ -153,10 +158,8 @@ export default function Sidebar() {
           })}
         </nav>
 
-        {/* Bottom actions: theme toggle + sign out */}
+        {/* Sign out */}
         <div style={{ padding: '8px', borderTop: '1px solid var(--border)', flexShrink: 0 }}>
-          <ThemeToggle collapsed={collapsed} />
-
           <button
             onClick={handleSignOut}
             title={collapsed ? 'Sign out' : undefined}
@@ -179,7 +182,7 @@ export default function Sidebar() {
               overflow: 'hidden',
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.background = 'rgba(128,128,128,0.08)';
+              (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.05)';
             }}
             onMouseLeave={(e) => {
               (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
@@ -201,8 +204,8 @@ export default function Sidebar() {
           left: 0,
           right: 0,
           height: '56px',
-          background: 'var(--sidebar-bg)',
-          borderBottom: '1px solid var(--sidebar-border)',
+          background: 'rgba(15, 23, 42, 0.75)',
+          borderBottom: '1px solid rgba(255,255,255,0.08)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
           alignItems: 'center',
@@ -211,33 +214,30 @@ export default function Sidebar() {
           zIndex: 50,
         }}
       >
-        <span style={{ fontWeight: 700, color: 'var(--accent)', fontSize: '0.95rem' }}>FinanceTracker</span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          {/* Inline theme toggle for mobile top bar */}
-          <ThemeToggleMini />
-          {/* Hamburger */}
-          <button
-            onClick={() => setDrawerOpen(true)}
-            style={{
-              width: '36px',
-              height: '36px',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '5px',
-              border: '1px solid var(--border)',
-              background: 'rgba(128,128,128,0.04)',
-              cursor: 'pointer',
-              borderRadius: '6px',
-            }}
-            aria-label="Open menu"
-          >
-            <span style={{ display: 'block', width: '20px', height: '2px', background: 'var(--text-muted)', borderRadius: '2px' }} />
-            <span style={{ display: 'block', width: '20px', height: '2px', background: 'var(--text-muted)', borderRadius: '2px' }} />
-            <span style={{ display: 'block', width: '20px', height: '2px', background: 'var(--text-muted)', borderRadius: '2px' }} />
-          </button>
-        </div>
+        <span style={{ fontWeight: 700, color: '#67E8F9', fontSize: '0.95rem' }}>FinanceTracker</span>
+        {/* Hamburger */}
+        <button
+          onClick={() => setDrawerOpen(true)}
+          style={{
+            width: '36px',
+            height: '36px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '5px',
+            border: '1px solid rgba(255,255,255,0.08)',
+            background: 'rgba(255,255,255,0.03)',
+            backdropFilter: 'blur(8px)',
+            cursor: 'pointer',
+            borderRadius: '6px',
+          }}
+          aria-label="Open menu"
+        >
+          <span style={{ display: 'block', width: '20px', height: '2px', background: 'var(--text-muted)', borderRadius: '2px' }} />
+          <span style={{ display: 'block', width: '20px', height: '2px', background: 'var(--text-muted)', borderRadius: '2px' }} />
+          <span style={{ display: 'block', width: '20px', height: '2px', background: 'var(--text-muted)', borderRadius: '2px' }} />
+        </button>
       </header>
 
       {/* ── Mobile drawer overlay ────────────────────────────── */}
@@ -249,7 +249,7 @@ export default function Sidebar() {
             display: 'none',
             position: 'fixed',
             inset: 0,
-            background: 'rgba(2,6,23,0.5)',
+            background: 'rgba(2,6,23,0.65)',
             backdropFilter: 'blur(4px)',
             WebkitBackdropFilter: 'blur(4px)',
             zIndex: 90,
@@ -266,8 +266,8 @@ export default function Sidebar() {
           left: 0,
           width: '260px',
           height: '100vh',
-          background: 'var(--sidebar-bg)',
-          borderRight: '1px solid var(--sidebar-border)',
+          background: 'rgba(15, 23, 42, 0.85)',
+          borderRight: '1px solid rgba(255,255,255,0.08)',
           backdropFilter: 'blur(24px)',
           WebkitBackdropFilter: 'blur(24px)',
           flexDirection: 'column',
@@ -283,10 +283,10 @@ export default function Sidebar() {
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: '0 16px',
-          borderBottom: '1px solid var(--border)',
+          borderBottom: '1px solid rgba(255,255,255,0.08)',
           flexShrink: 0,
         }}>
-          <span style={{ fontWeight: 700, color: 'var(--accent)', fontSize: '0.95rem' }}>FinanceTracker</span>
+          <span style={{ fontWeight: 700, color: '#67E8F9', fontSize: '0.95rem' }}>FinanceTracker</span>
           <button
             onClick={() => setDrawerOpen(false)}
             style={{
@@ -325,8 +325,9 @@ export default function Sidebar() {
                   marginBottom: '2px',
                   fontWeight: active ? 600 : 400,
                   color: active ? 'var(--text)' : 'var(--text-muted)',
-                  background: active ? 'var(--sidebar-active-bg)' : 'transparent',
-                  border: active ? '1px solid var(--sidebar-active-border)' : '1px solid transparent',
+                  background: active ? 'rgba(56,189,248,0.12)' : 'transparent',
+                  border: active ? '1px solid rgba(56,189,248,0.20)' : '1px solid transparent',
+                  boxShadow: active ? '0 0 16px rgba(56,189,248,0.08)' : 'none',
                   transition: 'all 0.18s ease',
                   fontSize: '0.9rem',
                   textDecoration: 'none',
@@ -339,9 +340,8 @@ export default function Sidebar() {
           })}
         </nav>
 
-        {/* Drawer bottom */}
+        {/* Drawer sign out */}
         <div style={{ padding: '10px', borderTop: '1px solid var(--border)', flexShrink: 0 }}>
-          <ThemeToggle collapsed={false} />
           <button
             onClick={handleSignOut}
             style={{
@@ -373,45 +373,5 @@ export default function Sidebar() {
         }
       `}</style>
     </>
-  );
-}
-
-// Small icon-only toggle for mobile top bar
-function ThemeToggleMini() {
-  const [isDark, setIsDark] = useState(true);
-
-  useEffect(() => {
-    const stored = localStorage.getItem('theme');
-    const system = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
-    setIsDark((stored ?? system) === 'dark');
-  }, []);
-
-  function toggle() {
-    const next = isDark ? 'light' : 'dark';
-    setIsDark(!isDark);
-    localStorage.setItem('theme', next);
-    document.documentElement.setAttribute('data-theme', next);
-  }
-
-  return (
-    <button
-      onClick={toggle}
-      title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-      style={{
-        width: '36px',
-        height: '36px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        border: '1px solid var(--border)',
-        background: 'rgba(128,128,128,0.04)',
-        cursor: 'pointer',
-        borderRadius: '6px',
-        fontSize: '1rem',
-        color: 'var(--text-muted)',
-      }}
-    >
-      {isDark ? '☀' : '☽'}
-    </button>
   );
 }
