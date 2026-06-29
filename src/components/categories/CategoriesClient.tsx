@@ -11,6 +11,8 @@ import {
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
+import { getCategoryPillStyles } from '@/lib/utils/categoryColor';
+import { useIsDark } from '@/lib/hooks/useIsDark';
 import type { Category, CategoryType } from '@/types';
 
 interface Props {
@@ -37,54 +39,52 @@ const TYPE_BG: Record<CategoryType, string> = {
 
 function TypeBadge({ type }: { type: CategoryType }) {
   return (
-    <span
-      style={{
-        display: 'inline-block',
-        padding: '2px 8px',
-        borderRadius: '999px',
-        fontSize: '0.72rem',
-        fontWeight: 700,
-        background: TYPE_BG[type],
-        color: TYPE_COLORS[type],
-        textTransform: 'uppercase',
-        letterSpacing: '0.04em',
-      }}
-    >
+    <span style={{
+      display: 'inline-block',
+      padding: '2px 8px',
+      borderRadius: '999px',
+      fontSize: '0.72rem',
+      fontWeight: 700,
+      background: TYPE_BG[type],
+      color: TYPE_COLORS[type],
+      textTransform: 'uppercase',
+      letterSpacing: '0.04em',
+    }}>
       {TYPE_LABELS[type]}
     </span>
   );
 }
 
-function CategoryPill({ color, name, inactive }: { color: string; name: string; inactive?: boolean }) {
+function CategoryPill({ color, name, inactive, isDark }: {
+  color: string; name: string; inactive?: boolean; isDark: boolean;
+}) {
+  const { pill, dot } = getCategoryPillStyles(color, isDark);
   return (
-    <span style={{
-      display: 'inline-flex',
-      alignItems: 'center',
-      gap: '6px',
-      padding: '4px 10px',
-      borderRadius: '999px',
-      backgroundColor: `${color}20`,
-      color: color,
-      fontSize: '0.8rem',
-      fontWeight: 600,
-      opacity: inactive ? 0.5 : 1,
-    }}>
-      <span style={{
-        width: '8px',
-        height: '8px',
-        borderRadius: '50%',
-        backgroundColor: color,
-        display: 'inline-block',
-        flexShrink: 0,
-      }} />
+    <span style={{ ...pill, opacity: inactive ? 0.5 : 1 }}>
+      <span style={dot} />
       {name}
     </span>
   );
 }
 
+const TypeSelect = ({ value, onChange }: { value: CategoryType; onChange: (v: CategoryType) => void }) => (
+  <div className="form-group">
+    <label className="form-label">Category Type</label>
+    <select value={value} onChange={(e) => onChange(e.target.value as CategoryType)}>
+      <option value="Expense">Expense</option>
+      <option value="Income">Income</option>
+      <option value="Both">Both (Income & Expense)</option>
+    </select>
+    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+      Controls which categories appear when creating a transaction.
+    </p>
+  </div>
+);
+
 export default function CategoriesClient({ categories }: Props) {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
+  const isDark = useIsDark();
 
   const [showAdd, setShowAdd] = useState(false);
   const [editTarget, setEditTarget] = useState<Category | null>(null);
@@ -111,9 +111,7 @@ export default function CategoriesClient({ categories }: Props) {
       startTransition(() => router.refresh());
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to create.');
-    } finally {
-      setSaving(false);
-    }
+    } finally { setSaving(false); }
   }
 
   async function handleUpdate(e: React.FormEvent) {
@@ -128,9 +126,7 @@ export default function CategoriesClient({ categories }: Props) {
       startTransition(() => router.refresh());
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to update.');
-    } finally {
-      setSaving(false);
-    }
+    } finally { setSaving(false); }
   }
 
   async function handleToggleActive(cat: Category) {
@@ -151,33 +147,11 @@ export default function CategoriesClient({ categories }: Props) {
       startTransition(() => router.refresh());
     } catch (err: unknown) {
       alert(err instanceof Error ? err.message : 'Delete failed. Category may have transactions.');
-    } finally {
-      setDeleting(false);
-    }
+    } finally { setDeleting(false); }
   }
 
-  const active   = categories.filter((c) => c.is_active);
+  const active = categories.filter((c) => c.is_active);
   const inactive = categories.filter((c) => !c.is_active);
-
-  const TypeSelect = ({
-    value,
-    onChange,
-  }: {
-    value: CategoryType;
-    onChange: (v: CategoryType) => void;
-  }) => (
-    <div className="form-group">
-      <label className="form-label">Category Type</label>
-      <select value={value} onChange={(e) => onChange(e.target.value as CategoryType)}>
-        <option value="Expense">Expense</option>
-        <option value="Income">Income</option>
-        <option value="Both">Both (Income & Expense)</option>
-      </select>
-      <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-        Controls which categories appear when creating a transaction.
-      </p>
-    </div>
-  );
 
   return (
     <>
@@ -195,38 +169,18 @@ export default function CategoriesClient({ categories }: Props) {
         </div>
         <table>
           <thead>
-            <tr>
-              <th>Name</th>
-              <th>Type</th>
-              <th style={{ width: '160px' }}></th>
-            </tr>
+            <tr><th>Name</th><th>Type</th><th style={{ width: '200px' }}></th></tr>
           </thead>
           <tbody>
             {active.map((cat) => (
               <tr key={cat.id}>
-                <td>
-                  <CategoryPill color={cat.color} name={cat.name} />
-                </td>
-                <td>
-                  <TypeBadge type={cat.type ?? 'Expense'} />
-                </td>
+                <td><CategoryPill color={cat.color} name={cat.name} isDark={isDark} /></td>
+                <td><TypeBadge type={cat.type ?? 'Expense'} /></td>
                 <td>
                   <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
-                    <Button size="sm" variant="ghost" onClick={() => {
-                      setEditTarget(cat);
-                      setEditName(cat.name);
-                      setEditColor(cat.color);
-                      setEditType(cat.type ?? 'Expense');
-                      setError('');
-                    }}>
-                      Edit
-                    </Button>
-                    <Button size="sm" variant="secondary" onClick={() => handleToggleActive(cat)}>
-                      Deactivate
-                    </Button>
-                    <Button size="sm" variant="danger" onClick={() => setDeleteTarget(cat)}>
-                      Del
-                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => { setEditTarget(cat); setEditName(cat.name); setEditColor(cat.color); setEditType(cat.type ?? 'Expense'); setError(''); }}>Edit</Button>
+                    <Button size="sm" variant="secondary" onClick={() => handleToggleActive(cat)}>Deactivate</Button>
+                    <Button size="sm" variant="danger" onClick={() => setDeleteTarget(cat)}>Del</Button>
                   </div>
                 </td>
               </tr>
@@ -247,21 +201,13 @@ export default function CategoriesClient({ categories }: Props) {
           </div>
           <table>
             <thead>
-              <tr>
-                <th>Name</th>
-                <th>Type</th>
-                <th style={{ width: '120px' }}></th>
-              </tr>
+              <tr><th>Name</th><th>Type</th><th style={{ width: '120px' }}></th></tr>
             </thead>
             <tbody>
               {inactive.map((cat) => (
                 <tr key={cat.id}>
-                  <td>
-                    <CategoryPill color={cat.color} name={cat.name} inactive />
-                  </td>
-                  <td>
-                    <TypeBadge type={cat.type ?? 'Expense'} />
-                  </td>
+                  <td><CategoryPill color={cat.color} name={cat.name} inactive isDark={isDark} /></td>
+                  <td><TypeBadge type={cat.type ?? 'Expense'} /></td>
                   <td>
                     <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
                       <Button size="sm" variant="secondary" onClick={() => handleToggleActive(cat)}>Activate</Button>
