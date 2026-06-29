@@ -1,6 +1,7 @@
 // src/types/index.ts
 
 export type TransactionType = 'Income' | 'Expense';
+export type CategoryType = 'Income' | 'Expense' | 'Both';
 
 export interface Category {
   id: string;
@@ -9,6 +10,7 @@ export interface Category {
   is_active: boolean;
   created_at: string;
   color: string;
+  type: CategoryType;
 }
 
 export interface Transaction {
@@ -21,7 +23,7 @@ export interface Transaction {
   description: string | null;
   year_month: string;
   created_at: string;
-  category?: Pick<Category, 'id' | 'name' | 'is_active' | 'color'>;
+  category?: Pick<Category, 'id' | 'name' | 'is_active' | 'color' | 'type'>;
 }
 
 export interface Budget {
@@ -31,7 +33,7 @@ export interface Budget {
   year_month: string;
   allocated_budget: number;
   created_at: string;
-  category?: Pick<Category, 'id' | 'name' | 'is_active' | 'color'>;
+  category?: Pick<Category, 'id' | 'name' | 'is_active' | 'color' | 'type'>;
 }
 
 export interface FinancialOverview {
