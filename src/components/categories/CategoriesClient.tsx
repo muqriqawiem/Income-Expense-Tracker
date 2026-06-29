@@ -193,49 +193,74 @@ export default function CategoriesClient({ categories }: Props) {
             Active ({active.length})
           </h2>
         </div>
-        <table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Type</th>
-              <th style={{ width: '160px' }}></th>
-            </tr>
-          </thead>
-          <tbody>
-            {active.map((cat) => (
-              <tr key={cat.id}>
-                <td>
-                  <CategoryPill color={cat.color} name={cat.name} />
-                </td>
-                <td>
-                  <TypeBadge type={cat.type ?? 'Expense'} />
-                </td>
-                <td>
-                  <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
-                    <Button size="sm" variant="ghost" onClick={() => {
-                      setEditTarget(cat);
-                      setEditName(cat.name);
-                      setEditColor(cat.color);
-                      setEditType(cat.type ?? 'Expense');
-                      setError('');
-                    }}>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ minWidth: '600px' }}>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th style={{ width: '160px' }}></th>
+              </tr>
+            </thead>
+            <tbody>
+              {active.map((cat) => (
+                <tr key={cat.id}>
+                  <td>
+                    <CategoryPill color={cat.color} name={cat.name} />
+                  </td>
+                  <td>
+                    <TypeBadge type={cat.type ?? 'Expense'} />
+                  </td>
+                  <td>
+                    <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                        setEditTarget(cat);
+                        setEditName(cat.name);
+                        setEditColor(cat.color);
+                        setEditType(cat.type ?? 'Expense');
+                        setError('');
+                      }}
+                    >
                       Edit
                     </Button>
-                    <Button size="sm" variant="secondary" onClick={() => handleToggleActive(cat)}>
+
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => handleToggleActive(cat)}
+                    >
                       Deactivate
                     </Button>
-                    <Button size="sm" variant="danger" onClick={() => setDeleteTarget(cat)}>
+
+                    <Button
+                      size="sm"
+                      variant="danger"
+                      onClick={() => setDeleteTarget(cat)}
+                    >
                       Del
                     </Button>
                   </div>
                 </td>
               </tr>
             ))}
+
             {active.length === 0 && (
-              <tr><td colSpan={3} className="text-center text-muted" style={{ padding: '20px' }}>No active categories.</td></tr>
+              <tr>
+                <td
+                  colSpan={3}
+                  className="text-center text-muted"
+                  style={{ padding: '20px' }}
+                >
+                  No active categories.
+                </td>
+              </tr>
             )}
           </tbody>
         </table>
+      </div>
       </div>
 
       {inactive.length > 0 && (
@@ -245,33 +270,55 @@ export default function CategoriesClient({ categories }: Props) {
               Inactive ({inactive.length})
             </h2>
           </div>
-          <table>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Type</th>
-                <th style={{ width: '120px' }}></th>
-              </tr>
-            </thead>
-            <tbody>
-              {inactive.map((cat) => (
-                <tr key={cat.id}>
-                  <td>
-                    <CategoryPill color={cat.color} name={cat.name} inactive />
-                  </td>
-                  <td>
-                    <TypeBadge type={cat.type ?? 'Expense'} />
-                  </td>
-                  <td>
-                    <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
-                      <Button size="sm" variant="secondary" onClick={() => handleToggleActive(cat)}>Activate</Button>
-                      <Button size="sm" variant="danger" onClick={() => setDeleteTarget(cat)}>Del</Button>
-                    </div>
-                  </td>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ minWidth: '600px' }}>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Type</th>
+                  <th style={{ width: '120px' }}></th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+
+              <tbody>
+                {inactive.map((cat) => (
+                  <tr key={cat.id}>
+                    <td>
+                      <CategoryPill
+                        color={cat.color}
+                        name={cat.name}
+                        inactive
+                      />
+                    </td>
+
+                    <td>
+                      <TypeBadge type={cat.type ?? 'Expense'} />
+                    </td>
+
+                    <td>
+                      <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => handleToggleActive(cat)}
+                        >
+                          Activate
+                        </Button>
+
+                        <Button
+                          size="sm"
+                          variant="danger"
+                          onClick={() => setDeleteTarget(cat)}
+                        >
+                          Del
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
