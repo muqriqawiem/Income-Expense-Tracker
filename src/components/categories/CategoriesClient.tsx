@@ -11,10 +11,48 @@ import {
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
-import type { Category } from '@/types';
+import type { Category, CategoryType } from '@/types';
 
 interface Props {
   categories: Category[];
+}
+
+const TYPE_LABELS: Record<CategoryType, string> = {
+  Income: 'Income',
+  Expense: 'Expense',
+  Both: 'Both',
+};
+
+const TYPE_COLORS: Record<CategoryType, string> = {
+  Income: 'var(--income)',
+  Expense: 'var(--expense)',
+  Both: 'var(--accent)',
+};
+
+const TYPE_BG: Record<CategoryType, string> = {
+  Income: 'var(--income-soft)',
+  Expense: 'var(--expense-soft)',
+  Both: 'var(--accent-soft)',
+};
+
+function TypeBadge({ type }: { type: CategoryType }) {
+  return (
+    <span
+      style={{
+        display: 'inline-block',
+        padding: '2px 8px',
+        borderRadius: '999px',
+        fontSize: '0.72rem',
+        fontWeight: 700,
+        background: TYPE_BG[type],
+        color: TYPE_COLORS[type],
+        textTransform: 'uppercase',
+        letterSpacing: '0.04em',
+      }}
+    >
+      {TYPE_LABELS[type]}
+    </span>
+  );
 }
 
 function CategoryPill({ color, name, inactive }: { color: string; name: string; inactive?: boolean }) {
@@ -55,6 +93,8 @@ export default function CategoriesClient({ categories }: Props) {
   const [editName, setEditName] = useState('');
   const [newColor, setNewColor] = useState('#3b82f6');
   const [editColor, setEditColor] = useState('#3b82f6');
+  const [newType, setNewType] = useState<CategoryType>('Expense');
+  const [editType, setEditType] = useState<CategoryType>('Expense');
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -65,7 +105,7 @@ export default function CategoriesClient({ categories }: Props) {
     if (!newName.trim()) { setError('Name is required.'); return; }
     setSaving(true);
     try {
-      await createCategory(newName.trim(), newColor);
+      await createCategory(newName.trim(), newColor, newType);
       setNewName('');
       setShowAdd(false);
       startTransition(() => router.refresh());
@@ -83,7 +123,7 @@ export default function CategoriesClient({ categories }: Props) {
     if (!editName.trim()) { setError('Name is required.'); return; }
     setSaving(true);
     try {
-      await updateCategory(editTarget.id, { name: editName.trim(), color: editColor });
+      await updateCategory(editTarget.id, { name: editName.trim(), color: editColor, type: editType });
       setEditTarget(null);
       startTransition(() => router.refresh());
     } catch (err: unknown) {
@@ -119,10 +159,30 @@ export default function CategoriesClient({ categories }: Props) {
   const active   = categories.filter((c) => c.is_active);
   const inactive = categories.filter((c) => !c.is_active);
 
+  const TypeSelect = ({
+    value,
+    onChange,
+  }: {
+    value: CategoryType;
+    onChange: (v: CategoryType) => void;
+  }) => (
+    <div className="form-group">
+      <label className="form-label">Category Type</label>
+      <select value={value} onChange={(e) => onChange(e.target.value as CategoryType)}>
+        <option value="Expense">Expense</option>
+        <option value="Income">Income</option>
+        <option value="Both">Both (Income & Expense)</option>
+      </select>
+      <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+        Controls which categories appear when creating a transaction.
+      </p>
+    </div>
+  );
+
   return (
     <>
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px' }}>
-        <Button variant="primary" onClick={() => { setShowAdd(true); setError(''); setNewName(''); setNewColor('#3b82f6'); }}>
+        <Button variant="primary" onClick={() => { setShowAdd(true); setError(''); setNewName(''); setNewColor('#3b82f6'); setNewType('Expense'); }}>
           + Add Category
         </Button>
       </div>
@@ -137,6 +197,7 @@ export default function CategoriesClient({ categories }: Props) {
           <thead>
             <tr>
               <th>Name</th>
+              <th>Type</th>
               <th style={{ width: '160px' }}></th>
             </tr>
           </thead>
@@ -147,8 +208,17 @@ export default function CategoriesClient({ categories }: Props) {
                   <CategoryPill color={cat.color} name={cat.name} />
                 </td>
                 <td>
+                  <TypeBadge type={cat.type ?? 'Expense'} />
+                </td>
+                <td>
                   <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
-                    <Button size="sm" variant="ghost" onClick={() => { setEditTarget(cat); setEditName(cat.name); setError(''); setEditColor(cat.color); }}>
+                    <Button size="sm" variant="ghost" onClick={() => {
+                      setEditTarget(cat);
+                      setEditName(cat.name);
+                      setEditColor(cat.color);
+                      setEditType(cat.type ?? 'Expense');
+                      setError('');
+                    }}>
                       Edit
                     </Button>
                     <Button size="sm" variant="secondary" onClick={() => handleToggleActive(cat)}>
@@ -162,7 +232,7 @@ export default function CategoriesClient({ categories }: Props) {
               </tr>
             ))}
             {active.length === 0 && (
-              <tr><td colSpan={2} className="text-center text-muted" style={{ padding: '20px' }}>No active categories.</td></tr>
+              <tr><td colSpan={3} className="text-center text-muted" style={{ padding: '20px' }}>No active categories.</td></tr>
             )}
           </tbody>
         </table>
@@ -179,6 +249,7 @@ export default function CategoriesClient({ categories }: Props) {
             <thead>
               <tr>
                 <th>Name</th>
+                <th>Type</th>
                 <th style={{ width: '120px' }}></th>
               </tr>
             </thead>
@@ -187,6 +258,9 @@ export default function CategoriesClient({ categories }: Props) {
                 <tr key={cat.id}>
                   <td>
                     <CategoryPill color={cat.color} name={cat.name} inactive />
+                  </td>
+                  <td>
+                    <TypeBadge type={cat.type ?? 'Expense'} />
                   </td>
                   <td>
                     <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
@@ -206,8 +280,9 @@ export default function CategoriesClient({ categories }: Props) {
           <form onSubmit={handleCreate}>
             <div className="form-group">
               <label className="form-label">Category Name</label>
-              <input type="text" value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="e.g. Food, Transport…" autoFocus />
+              <input type="text" value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="e.g. Food, Salary…" autoFocus />
             </div>
+            <TypeSelect value={newType} onChange={setNewType} />
             <div className="form-group">
               <label className="form-label">Category Color</label>
               <input type="color" value={newColor} onChange={(e) => setNewColor(e.target.value)} style={{ width: '60px', height: '40px', padding: 0, border: 'none', cursor: 'pointer' }} />
@@ -228,6 +303,7 @@ export default function CategoriesClient({ categories }: Props) {
               <label className="form-label">Category Name</label>
               <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} autoFocus />
             </div>
+            <TypeSelect value={editType} onChange={setEditType} />
             <div className="form-group">
               <label className="form-label">Category Color</label>
               <input type="color" value={editColor} onChange={(e) => setEditColor(e.target.value)} style={{ width: '60px', height: '40px', padding: 0, border: 'none', cursor: 'pointer' }} />
