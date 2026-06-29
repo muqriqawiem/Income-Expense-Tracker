@@ -3,14 +3,16 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { createTransaction, updateTransaction, deleteTransaction } from '@/data/transactions';
+import {
+  createTransaction,
+  updateTransaction,
+  deleteTransaction,
+} from '@/data/transactions';
 import { formatRM } from '@/lib/utils/currency';
 import { todayISO } from '@/lib/utils/date';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
-import { getCategoryPillStyles } from '@/lib/utils/categoryColor';
-import { useIsDark } from '@/lib/hooks/useIsDark';
 import type { Transaction, Category, TransactionFormData } from '@/types';
 import { exportTransactionsToExcel } from '@/lib/utils/exportToExcel';
 
@@ -28,10 +30,13 @@ const EMPTY_FORM: TransactionFormData = {
   description: '',
 };
 
-export default function TransactionTableClient({ transactions, categories, selectedMonth }: Props) {
+export default function TransactionTableClient({
+  transactions,
+  categories,
+  selectedMonth,
+}: Props) {
   const router = useRouter();
-  const [, startTransition] = useTransition();
-  const isDark = useIsDark();
+  const [isPending, startTransition] = useTransition();
 
   const [showForm, setShowForm] = useState(false);
   const [editTarget, setEditTarget] = useState<Transaction | null>(null);
@@ -41,6 +46,8 @@ export default function TransactionTableClient({ transactions, categories, selec
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
+  // Filter categories based on selected transaction type
+  // 'Both' categories appear under both Income and Expense
   const filteredCategories = categories.filter((c) => {
     if (!c.type || c.type === 'Both') return true;
     return c.type === form.type;
@@ -66,9 +73,13 @@ export default function TransactionTableClient({ transactions, categories, selec
     setShowForm(true);
   }
 
-  function closeForm() { setShowForm(false); setEditTarget(null); }
+  function closeForm() {
+    setShowForm(false);
+    setEditTarget(null);
+  }
 
   function handleTypeChange(newType: 'Income' | 'Expense') {
+    // Reset category_id when type changes — old category may not be valid for new type
     setForm((prev) => ({ ...prev, type: newType, category_id: '' }));
   }
 
@@ -86,11 +97,23 @@ export default function TransactionTableClient({ transactions, categories, selec
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
     setError('');
+
     const amount = parseFloat(form.amount);
-    if (!form.transaction_date) { setError('Date is required.'); return; }
-    if (!form.category_id) { setError('Category is required.'); return; }
-    if (isNaN(amount) || amount <= 0) { setError('Enter a valid amount.'); return; }
+    if (!form.transaction_date) {
+      setError('Date is required.');
+      return;
+    }
+    if (!form.category_id) {
+      setError('Category is required.');
+      return;
+    }
+    if (isNaN(amount) || amount <= 0) {
+      setError('Enter a valid amount.');
+      return;
+    }
+
     setSaving(true);
+
     try {
       const payload = {
         transaction_date: form.transaction_date,
@@ -99,38 +122,57 @@ export default function TransactionTableClient({ transactions, categories, selec
         amount,
         description: form.description || undefined,
       };
-      if (editTarget) { await updateTransaction(editTarget.id, payload); }
-      else { await createTransaction(payload); }
+
+      if (editTarget) {
+        await updateTransaction(editTarget.id, payload);
+      } else {
+        await createTransaction(payload);
+      }
+
       closeForm();
       startTransition(() => router.refresh());
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Something went wrong.');
-    } finally { setSaving(false); }
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function handleDelete() {
     if (!deleteTarget) return;
     setDeleting(true);
+
     try {
       await deleteTransaction(deleteTarget.id);
       setDeleteTarget(null);
       startTransition(() => router.refresh());
     } catch (err: unknown) {
       alert(err instanceof Error ? err.message : 'Delete failed.');
-    } finally { setDeleting(false); }
+    } finally {
+      setDeleting(false);
+    }
   }
 
   return (
     <>
       <div className="page-header" style={{ marginBottom: '16px' }}>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-          {transactions.length} transaction{transactions.length !== 1 ? 's' : ''}
+          {transactions.length} transaction
+          {transactions.length !== 1 ? 's' : ''}
         </p>
+
         <div style={{ display: 'flex', gap: '8px' }}>
-          <Button variant="secondary" onClick={handleExport} disabled={transactions.length === 0}>
+          <Button
+            variant="secondary"
+            onClick={handleExport}
+            disabled={transactions.length === 0}
+          >
             ↓ Export Excel
           </Button>
-          <Button variant="primary" onClick={openAdd}>+ Add Transaction</Button>
+
+          <Button variant="primary" onClick={openAdd}>
+            + Add Transaction
+          </Button>
         </div>
       </div>
 
@@ -146,36 +188,83 @@ export default function TransactionTableClient({ transactions, categories, selec
           <table>
             <thead>
               <tr>
-                <th>Date</th><th>Type</th><th>Category</th>
-                <th className="text-right">Amount</th><th>Description</th>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Category</th>
+                <th className="text-right">Amount</th>
+                <th>Description</th>
                 <th style={{ width: '80px' }}></th>
               </tr>
             </thead>
+
             <tbody>
               {transactions.map((t) => {
-                const { pill, dot } = getCategoryPillStyles(t.category?.color ?? '#6b7280', isDark);
+                const categoryColor = t.category?.color ?? '#6b7280';
+
                 return (
                   <tr key={t.id}>
-                    <td style={{ whiteSpace: 'nowrap' }}>{t.transaction_date}</td>
-                    <td><span className={`badge badge-${t.type.toLowerCase()}`}>{t.type}</span></td>
+                    <td style={{ whiteSpace: 'nowrap' }}>
+                      {t.transaction_date}
+                    </td>
+
+                    <td>
+                      <span className={`badge badge-${t.type.toLowerCase()}`}>
+                        {t.type}
+                      </span>
+                    </td>
+
                     <td>
                       {t.category ? (
-                        <span style={pill}>
-                          <span style={dot} />
+                        <span
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            padding: '4px 10px',
+                            borderRadius: '999px',
+                            backgroundColor: `${categoryColor}20`,
+                            color: categoryColor,
+                            fontSize: '0.8rem',
+                            fontWeight: 600,
+                          }}
+                        >
+                          <span
+                            style={{
+                              width: '8px',
+                              height: '8px',
+                              borderRadius: '50%',
+                              backgroundColor: categoryColor,
+                            }}
+                          />
                           {t.category.name}
                         </span>
                       ) : (
                         <span className="text-muted">—</span>
                       )}
                     </td>
-                    <td className="text-right font-mono" style={{ color: t.type === 'Income' ? 'var(--income)' : 'var(--expense)', fontWeight: 600 }}>
+
+                    <td
+                      className="text-right font-mono"
+                      style={{
+                        color: t.type === 'Income' ? 'var(--income)' : 'var(--expense)',
+                        fontWeight: 600,
+                      }}
+                    >
                       {formatRM(Number(t.amount))}
                     </td>
-                    <td style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>{t.description ?? '—'}</td>
+
+                    <td style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                      {t.description ?? '—'}
+                    </td>
+
                     <td>
                       <div style={{ display: 'flex', gap: '6px' }}>
-                        <Button size="sm" variant="ghost" onClick={() => openEdit(t)}>Edit</Button>
-                        <Button size="sm" variant="danger" onClick={() => setDeleteTarget(t)}>Del</Button>
+                        <Button size="sm" variant="ghost" onClick={() => openEdit(t)}>
+                          Edit
+                        </Button>
+                        <Button size="sm" variant="danger" onClick={() => setDeleteTarget(t)}>
+                          Del
+                        </Button>
                       </div>
                     </td>
                   </tr>
@@ -186,20 +275,33 @@ export default function TransactionTableClient({ transactions, categories, selec
         </div>
       )}
 
+      {/* Add / Edit Modal */}
       {showForm && (
-        <Modal title={editTarget ? 'Edit Transaction' : 'Add Transaction'} onClose={closeForm}>
+        <Modal
+          title={editTarget ? 'Edit Transaction' : 'Add Transaction'}
+          onClose={closeForm}
+        >
           <form onSubmit={handleSave}>
             <div className="form-group">
               <label className="form-label">Date</label>
-              <input type="date" value={form.transaction_date} onChange={(e) => setForm({ ...form, transaction_date: e.target.value })} />
+              <input
+                type="date"
+                value={form.transaction_date}
+                onChange={(e) => setForm({ ...form, transaction_date: e.target.value })}
+              />
             </div>
+
             <div className="form-group">
               <label className="form-label">Type</label>
-              <select value={form.type} onChange={(e) => handleTypeChange(e.target.value as 'Income' | 'Expense')}>
+              <select
+                value={form.type}
+                onChange={(e) => handleTypeChange(e.target.value as 'Income' | 'Expense')}
+              >
                 <option value="Income">Income</option>
                 <option value="Expense">Expense</option>
               </select>
             </div>
+
             <div className="form-group">
               <label className="form-label">
                 Category
@@ -209,34 +311,59 @@ export default function TransactionTableClient({ transactions, categories, selec
                   </span>
                 )}
               </label>
-              <select value={form.category_id} onChange={(e) => setForm({ ...form, category_id: e.target.value })}>
+              <select
+                value={form.category_id}
+                onChange={(e) => setForm({ ...form, category_id: e.target.value })}
+              >
                 <option value="">Select category…</option>
                 {filteredCategories.map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}{c.type === 'Both' ? ' (Both)' : ''}</option>
+                  <option key={c.id} value={c.id}>
+                    {c.name}{c.type === 'Both' ? ' (Both)' : ''}
+                  </option>
                 ))}
               </select>
             </div>
+
             <div className="form-group">
               <label className="form-label">Amount (RM)</label>
-              <input type="number" step="0.01" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} />
+              <input
+                type="number"
+                step="0.01"
+                value={form.amount}
+                onChange={(e) => setForm({ ...form, amount: e.target.value })}
+              />
             </div>
+
             <div className="form-group">
               <label className="form-label">Description</label>
-              <input type="text" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+              <input
+                type="text"
+                value={form.description}
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
+              />
             </div>
+
             {error && <p className="form-error">{error}</p>}
+
             <div className="modal-actions">
-              <Button variant="ghost" type="button" onClick={closeForm}>Cancel</Button>
-              <Button variant="primary" type="submit" loading={saving}>{editTarget ? 'Save changes' : 'Add transaction'}</Button>
+              <Button variant="ghost" type="button" onClick={closeForm}>
+                Cancel
+              </Button>
+              <Button variant="primary" type="submit" loading={saving}>
+                {editTarget ? 'Save changes' : 'Add transaction'}
+              </Button>
             </div>
           </form>
         </Modal>
       )}
 
+      {/* Delete Confirm */}
       {deleteTarget && (
         <ConfirmDialog
           title="Delete transaction?"
-          message={`This will permanently delete the ${deleteTarget.type.toLowerCase()} of ${formatRM(Number(deleteTarget.amount))} on ${deleteTarget.transaction_date}.`}
+          message={`This will permanently delete the ${deleteTarget.type.toLowerCase()} of ${formatRM(
+            Number(deleteTarget.amount)
+          )} on ${deleteTarget.transaction_date}.`}
           onConfirm={handleDelete}
           onCancel={() => setDeleteTarget(null)}
           loading={deleting}
