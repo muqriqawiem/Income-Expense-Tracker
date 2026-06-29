@@ -46,6 +46,13 @@ export default function TransactionTableClient({
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
+  // Filter categories based on selected transaction type
+  // 'Both' categories appear under both Income and Expense
+  const filteredCategories = categories.filter((c) => {
+    if (!c.type || c.type === 'Both') return true;
+    return c.type === form.type;
+  });
+
   function openAdd() {
     setForm({ ...EMPTY_FORM, transaction_date: todayISO() });
     setEditTarget(null);
@@ -69,6 +76,11 @@ export default function TransactionTableClient({
   function closeForm() {
     setShowForm(false);
     setEditTarget(null);
+  }
+
+  function handleTypeChange(newType: 'Income' | 'Expense') {
+    // Reset category_id when type changes — old category may not be valid for new type
+    setForm((prev) => ({ ...prev, type: newType, category_id: '' }));
   }
 
   function handleExport() {
@@ -283,9 +295,7 @@ export default function TransactionTableClient({
               <label className="form-label">Type</label>
               <select
                 value={form.type}
-                onChange={(e) =>
-                  setForm({ ...form, type: e.target.value as 'Income' | 'Expense' })
-                }
+                onChange={(e) => handleTypeChange(e.target.value as 'Income' | 'Expense')}
               >
                 <option value="Income">Income</option>
                 <option value="Expense">Expense</option>
@@ -293,15 +303,22 @@ export default function TransactionTableClient({
             </div>
 
             <div className="form-group">
-              <label className="form-label">Category</label>
+              <label className="form-label">
+                Category
+                {filteredCategories.length === 0 && (
+                  <span style={{ color: 'var(--expense)', marginLeft: '6px', fontSize: '0.75rem', fontWeight: 400 }}>
+                    — No {form.type} categories found. Add one in Categories.
+                  </span>
+                )}
+              </label>
               <select
                 value={form.category_id}
                 onChange={(e) => setForm({ ...form, category_id: e.target.value })}
               >
                 <option value="">Select category…</option>
-                {categories.map((c) => (
+                {filteredCategories.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.name}
+                    {c.name}{c.type === 'Both' ? ' (Both)' : ''}
                   </option>
                 ))}
               </select>
