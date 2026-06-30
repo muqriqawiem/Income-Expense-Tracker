@@ -3,6 +3,7 @@
 
 import { useState } from 'react';
 import { formatRM } from '@/lib/utils/currency';
+import { setMaskMoneyPreference } from '@/data/preferences';
 import BudgetSummaryTable from '@/components/dashboard/BudgetSummaryTable';
 import SpendingChart from '@/components/dashboard/SpendingChart';
 import DrilldownPanel, { type DrilldownTarget } from '@/components/dashboard/DrilldownPanel';
@@ -14,6 +15,7 @@ interface Props {
   budgetRows: BudgetSummaryRow[];
   selectedMonth: string;
   prevMonth: string;
+  initialMaskMoney: boolean;
 }
 
 // ── helpers ────────────────────────────────────────────────────
@@ -23,13 +25,62 @@ function pctChange(current: number, prev: number): number | null {
   return ((current - prev) / Math.abs(prev)) * 100;
 }
 
+const MASK_PLACEHOLDER = 'RM ••••';
+
+function displayRM(value: number, masked: boolean): string {
+  return masked ? MASK_PLACEHOLDER : formatRM(value);
+}
+
+// ── MaskToggleButton ───────────────────────────────────────────
+
+function MaskToggleButton({ masked, onClick }: { masked: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      title={masked ? 'Show amounts' : 'Hide amounts'}
+      aria-label={masked ? 'Show amounts' : 'Hide amounts'}
+      style={{
+        width: '36px',
+        height: '36px',
+        borderRadius: '8px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: 'var(--text-muted)',
+        background: 'rgba(255,255,255,0.04)',
+        border: '1px solid var(--border)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+        cursor: 'pointer',
+        fontSize: '1.1rem',
+        transition: 'background 0.15s, color 0.15s',
+        flexShrink: 0,
+      }}
+      onMouseEnter={(e) => {
+        (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.08)';
+        (e.currentTarget as HTMLButtonElement).style.color = 'var(--text)';
+      }}
+      onMouseLeave={(e) => {
+        (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.04)';
+        (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)';
+      }}
+    >
+      {masked ? '🙈' : '👁'}
+    </button>
+  );
+}
+
 // ── DeltaPill ──────────────────────────────────────────────────
 
 function DeltaPill({
-  current, prev, invertPolarity = false, prevMonthLabel,
+  current, prev, invertPolarity = false, prevMonthLabel, masked,
 }: {
-  current: number; prev: number; invertPolarity?: boolean; prevMonthLabel: string;
+  current: number; prev: number; invertPolarity?: boolean; prevMonthLabel: string; masked: boolean;
 }) {
+  if (masked) {
+    return <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>•• vs {prevMonthLabel}</span>;
+  }
+
   const pct = pctChange(current, prev);
 
   if (pct === null) {
@@ -146,9 +197,25 @@ function OverviewCard({
 // ── DashboardClient ────────────────────────────────────────────
 
 export default function DashboardClient({
-  overview, prevOverview, budgetRows, selectedMonth, prevMonth,
+  overview, prevOverview, budgetRows, selectedMonth, prevMonth, initialMaskMoney,
 }: Props) {
   const [drilldown, setDrilldown] = useState<DrilldownTarget | null>(null);
+  const [masked, setMasked] = useState(initialMaskMoney);
+  const [savingMask, setSavingMask] = useState(false);
+
+  async function toggleMask() {
+    const next = !masked;
+    setMasked(next); // optimistic update — instant UI feedback
+    setSavingMask(true);
+    try {
+      await setMaskMoneyPreference(next);
+    } catch {
+      // Revert on failure so UI state matches what's actually persisted
+      setMasked(!next);
+    } finally {
+      setSavingMask(false);
+    }
+  }
 
   const [prevYear, prevMonthNum] = prevMonth.split('-').map(Number);
   const [selYear] = selectedMonth.split('-').map(Number);
@@ -159,48 +226,53 @@ export default function DashboardClient({
 
   return (
     <>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '12px' }}>
+        <MaskToggleButton masked={masked} onClick={toggleMask} />
+      </div>
+
       <div className="overview-grid">
         <OverviewCard
           label="Total Income"
-          value={formatRM(overview.total_income)}
+          value={displayRM(overview.total_income, masked)}
           positive={true}
           onClick={() => setDrilldown({ kind: 'income', year_month: selectedMonth })}
-          deltaNode={<DeltaPill current={overview.total_income} prev={prevOverview.total_income} prevMonthLabel={prevLabel} />}
+          deltaNode={<DeltaPill current={overview.total_income} prev={prevOverview.total_income} prevMonthLabel={prevLabel} masked={masked} />}
         />
         <OverviewCard
           label="Total Expense"
-          value={formatRM(overview.total_expense)}
+          value={displayRM(overview.total_expense, masked)}
           positive={false}
           onClick={() => setDrilldown({ kind: 'expense', year_month: selectedMonth })}
-          deltaNode={<DeltaPill current={overview.total_expense} prev={prevOverview.total_expense} invertPolarity prevMonthLabel={prevLabel} />}
+          deltaNode={<DeltaPill current={overview.total_expense} prev={prevOverview.total_expense} invertPolarity prevMonthLabel={prevLabel} masked={masked} />}
         />
         <OverviewCard
           label="Total Remaining"
-          value={formatRM(overview.total_remaining)}
+          value={displayRM(overview.total_remaining, masked)}
           positive={overview.total_remaining >= 0}
           onClick={() => setDrilldown({ kind: 'remaining', year_month: selectedMonth })}
-          deltaNode={<DeltaPill current={overview.total_remaining} prev={prevOverview.total_remaining} prevMonthLabel={prevLabel} />}
+          deltaNode={<DeltaPill current={overview.total_remaining} prev={prevOverview.total_remaining} prevMonthLabel={prevLabel} masked={masked} />}
         />
         <OverviewCard
           label="Total Allocated Budget"
-          value={formatRM(overview.total_allocated_budget)}
+          value={displayRM(overview.total_allocated_budget, masked)}
         />
         <OverviewCard
           label="Buffer"
-          value={formatRM(overview.buffer)}
+          value={displayRM(overview.buffer, masked)}
           positive={overview.buffer >= 0}
           onClick={() => setDrilldown({ kind: 'buffer', year_month: selectedMonth, allocated: overview.total_allocated_budget })}
-          deltaNode={<DeltaPill current={overview.buffer} prev={prevOverview.buffer} prevMonthLabel={prevLabel} />}
+          deltaNode={<DeltaPill current={overview.buffer} prev={prevOverview.buffer} prevMonthLabel={prevLabel} masked={masked} />}
         />
       </div>
 
       <div style={{ marginBottom: '24px' }}>
-        <SpendingChart rows={budgetRows} totalExpense={overview.total_expense} />
+        <SpendingChart rows={budgetRows} totalExpense={overview.total_expense} masked={masked} />
       </div>
 
       <BudgetSummaryTable
         rows={budgetRows}
         year_month={selectedMonth}
+        masked={masked}
         onDrilldown={(row) => setDrilldown({
           kind: 'budget-category',
           year_month: selectedMonth,
@@ -212,6 +284,8 @@ export default function DashboardClient({
         })}
       />
 
+      {/* Drilldown panel is intentionally NOT given `masked` — drilldown values are
+          always shown in full, per spec (masking applies to the dashboard page only) */}
       <DrilldownPanel
         target={drilldown}
         overview={overview}
