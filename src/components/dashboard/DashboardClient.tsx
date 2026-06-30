@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import { formatRM } from '@/lib/utils/currency';
 import { setMaskMoneyPreference } from '@/data/preferences';
+import MonthSelector from '@/components/dashboard/MonthSelector';
 import BudgetSummaryTable from '@/components/dashboard/BudgetSummaryTable';
 import SpendingChart from '@/components/dashboard/SpendingChart';
 import DrilldownPanel, { type DrilldownTarget } from '@/components/dashboard/DrilldownPanel';
@@ -15,6 +16,7 @@ interface Props {
   budgetRows: BudgetSummaryRow[];
   selectedMonth: string;
   prevMonth: string;
+  monthOptions: string[];
   initialMaskMoney: boolean;
 }
 
@@ -31,6 +33,27 @@ function displayRM(value: number, masked: boolean): string {
   return masked ? MASK_PLACEHOLDER : formatRM(value);
 }
 
+// ── Eye / EyeOff icons (professional outline style, stroke-based) ──
+
+function EyeIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+}
+
+function EyeOffIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+      <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 11 7 11 7a13.16 13.16 0 0 1-3.17 4.34M6.61 6.61C3.35 8.36 1 12 1 12s4 7 11 7a10.4 10.4 0 0 0 5.05-1.25" />
+      <line x1="1" y1="1" x2="23" y2="23" />
+    </svg>
+  );
+}
+
 // ── MaskToggleButton ───────────────────────────────────────────
 
 function MaskToggleButton({ masked, onClick }: { masked: boolean; onClick: () => void }) {
@@ -39,33 +62,39 @@ function MaskToggleButton({ masked, onClick }: { masked: boolean; onClick: () =>
       onClick={onClick}
       title={masked ? 'Show amounts' : 'Hide amounts'}
       aria-label={masked ? 'Show amounts' : 'Hide amounts'}
+      aria-pressed={masked}
       style={{
-        width: '36px',
-        height: '36px',
-        borderRadius: '8px',
+        width: '38px',
+        height: '38px',
+        borderRadius: '12px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        color: 'var(--text-muted)',
-        background: 'rgba(255,255,255,0.04)',
-        border: '1px solid var(--border)',
-        backdropFilter: 'blur(8px)',
-        WebkitBackdropFilter: 'blur(8px)',
+        color: masked ? 'var(--accent)' : 'var(--text-muted)',
+        background: masked ? 'var(--accent-soft)' : 'rgba(255,255,255,0.04)',
+        border: masked ? '1px solid rgba(56,189,248,0.30)' : '1px solid var(--border)',
+        backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)',
         cursor: 'pointer',
-        fontSize: '1.1rem',
-        transition: 'background 0.15s, color 0.15s',
+        transition: 'background 0.15s ease, color 0.15s ease, border-color 0.15s ease',
         flexShrink: 0,
       }}
       onMouseEnter={(e) => {
-        (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.08)';
-        (e.currentTarget as HTMLButtonElement).style.color = 'var(--text)';
+        const el = e.currentTarget as HTMLButtonElement;
+        if (!masked) {
+          el.style.background = 'rgba(255,255,255,0.08)';
+          el.style.color = 'var(--text)';
+        }
       }}
       onMouseLeave={(e) => {
-        (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.04)';
-        (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)';
+        const el = e.currentTarget as HTMLButtonElement;
+        if (!masked) {
+          el.style.background = 'rgba(255,255,255,0.04)';
+          el.style.color = 'var(--text-muted)';
+        }
       }}
     >
-      {masked ? '🙈' : '👁'}
+      {masked ? <EyeOffIcon /> : <EyeIcon />}
     </button>
   );
 }
@@ -197,23 +226,19 @@ function OverviewCard({
 // ── DashboardClient ────────────────────────────────────────────
 
 export default function DashboardClient({
-  overview, prevOverview, budgetRows, selectedMonth, prevMonth, initialMaskMoney,
+  overview, prevOverview, budgetRows, selectedMonth, prevMonth, monthOptions, initialMaskMoney,
 }: Props) {
   const [drilldown, setDrilldown] = useState<DrilldownTarget | null>(null);
   const [masked, setMasked] = useState(initialMaskMoney);
-  const [savingMask, setSavingMask] = useState(false);
 
   async function toggleMask() {
     const next = !masked;
     setMasked(next); // optimistic update — instant UI feedback
-    setSavingMask(true);
     try {
       await setMaskMoneyPreference(next);
     } catch {
       // Revert on failure so UI state matches what's actually persisted
       setMasked(!next);
-    } finally {
-      setSavingMask(false);
     }
   }
 
@@ -226,8 +251,12 @@ export default function DashboardClient({
 
   return (
     <>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '12px' }}>
-        <MaskToggleButton masked={masked} onClick={toggleMask} />
+      <div className="page-header">
+        <h1 className="page-title">Dashboard</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <MaskToggleButton masked={masked} onClick={toggleMask} />
+          <MonthSelector options={monthOptions} selected={selectedMonth} />
+        </div>
       </div>
 
       <div className="overview-grid">
@@ -284,8 +313,7 @@ export default function DashboardClient({
         })}
       />
 
-      {/* Drilldown panel is intentionally NOT given `masked` — drilldown values are
-          always shown in full, per spec (masking applies to the dashboard page only) */}
+      {/* Drilldown panel intentionally NOT given `masked` — masking is dashboard-only */}
       <DrilldownPanel
         target={drilldown}
         overview={overview}
