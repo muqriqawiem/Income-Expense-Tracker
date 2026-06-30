@@ -3,7 +3,6 @@ import { getFinancialOverview, getBudgetSummaryRows } from '@/data/summary';
 import { getMaskMoneyPreference } from '@/data/preferences';
 import { generateMonthOptions, currentYearMonth } from '@/lib/utils/date';
 
-import MonthSelector from '@/components/dashboard/MonthSelector';
 import DashboardClient from '@/components/dashboard/DashboardClient';
 
 interface Props {
@@ -31,20 +30,14 @@ export default async function DashboardPage({ searchParams }: Props) {
   ]);
 
   return (
-    <>
-      <div className="page-header">
-        <h1 className="page-title">Dashboard</h1>
-        <MonthSelector options={monthOptions} selected={selectedMonth} />
-      </div>
-
-      <DashboardClient
-        overview={overview}
-        prevOverview={prevOverview}
-        budgetRows={budgetRows}
-        selectedMonth={selectedMonth}
-        prevMonth={prevMonth}
-        initialMaskMoney={initialMaskMoney}
-      />
-    </>
+    <DashboardClient
+      overview={overview}
+      prevOverview={prevOverview}
+      budgetRows={budgetRows}
+      selectedMonth={selectedMonth}
+      prevMonth={prevMonth}
+      monthOptions={monthOptions}
+      initialMaskMoney={initialMaskMoney}
+    />
   );
 }
