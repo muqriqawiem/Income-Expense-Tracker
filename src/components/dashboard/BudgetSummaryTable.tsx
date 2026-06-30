@@ -9,6 +9,13 @@ interface Props {
   rows: BudgetSummaryRow[];
   year_month: string;
   onDrilldown?: (row: BudgetSummaryRow) => void;
+  masked?: boolean;
+}
+
+const MASK_PLACEHOLDER = 'RM ••••';
+
+function displayRM(value: number, masked?: boolean): string {
+  return masked ? MASK_PLACEHOLDER : formatRM(value);
 }
 
 function usedColor(pct: number): string {
@@ -17,7 +24,7 @@ function usedColor(pct: number): string {
   return 'var(--income)';
 }
 
-export default function BudgetSummaryTable({ rows, year_month, onDrilldown }: Props) {
+export default function BudgetSummaryTable({ rows, year_month, onDrilldown, masked = false }: Props) {
   const [open, setOpen] = useState(true);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
@@ -110,12 +117,12 @@ export default function BudgetSummaryTable({ rows, year_month, onDrilldown }: Pr
                             )}
                           </div>
                         </td>
-                        <td className="text-right font-mono">{formatRM(row.allocated_budget)}</td>
+                        <td className="text-right font-mono">{displayRM(row.allocated_budget, masked)}</td>
                         <td className="text-right font-mono" style={{ color: 'var(--expense)' }}>
-                          {formatRM(row.spent)}
+                          {displayRM(row.spent, masked)}
                         </td>
                         <td className="text-right font-mono" style={{ color: row.remaining < 0 ? 'var(--expense)' : 'var(--income)' }}>
-                          {formatRM(row.remaining)}
+                          {displayRM(row.remaining, masked)}
                         </td>
                         <td>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -126,7 +133,7 @@ export default function BudgetSummaryTable({ rows, year_month, onDrilldown }: Pr
                               />
                             </div>
                             <span style={{ fontSize: '0.8rem', fontWeight: 600, color, minWidth: '40px' }}>
-                              {row.used_percent.toFixed(0)}%
+                              {masked ? '••%' : `${row.used_percent.toFixed(0)}%`}
                             </span>
                           </div>
                         </td>
