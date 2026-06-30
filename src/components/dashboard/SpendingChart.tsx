@@ -8,6 +8,7 @@ import type { BudgetSummaryRow } from '@/types';
 interface Props {
   rows: BudgetSummaryRow[];
   totalExpense: number;
+  masked?: boolean;
 }
 
 const DONUT_R = 80;
@@ -15,6 +16,12 @@ const DONUT_CX = 110;
 const DONUT_CY = 110;
 const STROKE_W = 28;
 const GAP = 3;
+
+const MASK_PLACEHOLDER = 'RM ••••';
+
+function displayRM(value: number, masked?: boolean): string {
+  return masked ? MASK_PLACEHOLDER : formatRM(value);
+}
 
 function polarToXY(cx: number, cy: number, r: number, deg: number) {
   const rad = ((deg - 90) * Math.PI) / 180;
@@ -28,7 +35,7 @@ function describeArc(cx: number, cy: number, r: number, startDeg: number, endDeg
   return `M ${start.x} ${start.y} A ${r} ${r} 0 ${largeArc} 1 ${end.x} ${end.y}`;
 }
 
-export default function SpendingChart({ rows, totalExpense }: Props) {
+export default function SpendingChart({ rows, totalExpense, masked = false }: Props) {
   const [open, setOpen] = useState(true);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
@@ -179,7 +186,7 @@ export default function SpendingChart({ rows, totalExpense }: Props) {
                         fontWeight="700"
                         fontFamily='"JetBrains Mono", "Fira Code", monospace'
                       >
-                        {formatRM(hovered.spent)}
+                        {displayRM(hovered.spent, masked)}
                       </text>
                       <text
                         x={DONUT_CX}
@@ -190,7 +197,7 @@ export default function SpendingChart({ rows, totalExpense }: Props) {
                         fontSize="10"
                         fontFamily="Inter, system-ui, sans-serif"
                       >
-                        {((hovered.spent / totalExpense) * 100).toFixed(1)}% of total
+                        {masked ? '••' : `${((hovered.spent / totalExpense) * 100).toFixed(1)}%`} of total
                       </text>
                     </>
                   ) : (
@@ -217,7 +224,7 @@ export default function SpendingChart({ rows, totalExpense }: Props) {
                         fontWeight="700"
                         fontFamily='"JetBrains Mono", "Fira Code", monospace'
                       >
-                        {formatRM(totalExpense)}
+                        {displayRM(totalExpense, masked)}
                       </text>
                     </>
                   )}
@@ -280,9 +287,9 @@ export default function SpendingChart({ rows, totalExpense }: Props) {
                             color: isHovered ? 'var(--text)' : 'var(--text-muted)',
                           }}
                         >
-                          {formatRM(row.spent)}{' '}
+                          {displayRM(row.spent, masked)}{' '}
                           <span style={{ opacity: 0.5, fontSize: '0.72rem' }}>
-                            {pct.toFixed(1)}%
+                            {masked ? '••%' : `${pct.toFixed(1)}%`}
                           </span>
                         </span>
                       </div>
