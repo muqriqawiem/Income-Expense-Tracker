@@ -1,32 +1,37 @@
 // src/components/layout/Sidebar.tsx
 'use client';
 
+import {
+  LayoutDashboard,
+  ArrowLeftRight,
+  Tags,
+  Wallet,
+  LogOut,
+  type LucideIcon,
+} from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 
-const NAV = [
-  { href: '/dashboard',    label: 'Dashboard',     icon: '◈' },
-  { href: '/transactions', label: 'Transactions',  icon: '⇄' },
-  { href: '/categories',   label: 'Categories',    icon: '◉' },
-  { href: '/budgets',      label: 'Budgets',       icon: '◎' },
+const NAV: { href: string; label: string; icon: LucideIcon }[] = [
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/transactions', label: 'Transactions', icon: ArrowLeftRight },
+  { href: '/categories', label: 'Categories', icon: Tags },
+  { href: '/budgets', label: 'Budgets', icon: Wallet },
 ];
 
 const COLLAPSED_W = 60;
-const EXPANDED_W  = 220;
+const EXPANDED_W = 220;
 
 export default function Sidebar() {
-  const pathname  = usePathname();
-  const router    = useRouter();
+  const pathname = usePathname();
+  const router = useRouter();
 
   // Desktop: collapsed state
   const [collapsed, setCollapsed] = useState(() => {
     if (typeof window === 'undefined') return false;
     return localStorage.getItem('sidebar-collapsed') === 'true';
   });
-
-  // Mobile: drawer open state
-  const [drawerOpen, setDrawerOpen] = useState(false);
 
   // Sync collapsed pref to localStorage
   useEffect(() => {
@@ -37,11 +42,6 @@ export default function Sidebar() {
       `${collapsed ? COLLAPSED_W : EXPANDED_W}px`
     );
   }, [collapsed]);
-
-  // Close drawer on route change
-  useEffect(() => {
-    setDrawerOpen(false);
-  }, [pathname]);
 
   async function handleSignOut() {
     const supabase = createClient();
@@ -151,7 +151,7 @@ export default function Sidebar() {
                   textDecoration: 'none',
                 }}
               >
-                <span style={{ fontSize: '1.1rem', opacity: 0.85, flexShrink: 0 }}>{item.icon}</span>
+                <item.icon size={19} strokeWidth={2} style={{ opacity: 0.9, flexShrink: 0 }} />
                 {!collapsed && item.label}
               </a>
             );
@@ -188,188 +188,100 @@ export default function Sidebar() {
               (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
             }}
           >
-            <span style={{ flexShrink: 0 }}>↪</span>
+            <LogOut size={16} strokeWidth={2} style={{ flexShrink: 0 }} />
             {!collapsed && ' Sign out'}
           </button>
         </div>
       </aside>
 
-      {/* ── Mobile top bar ────────────────────────────────────── */}
-      <header
-        className="mobile-topbar"
+      {/* ── Mobile bottom tab bar (Instagram-style, icons only) ── */}
+      <nav
+        className="mobile-bottom-nav"
         style={{
           display: 'none',
           position: 'fixed',
-          top: 0,
+          bottom: 0,
           left: 0,
           right: 0,
-          height: '56px',
-          background: 'rgba(15, 23, 42, 0.75)',
-          borderBottom: '1px solid rgba(255,255,255,0.08)',
+          height: 'calc(58px + env(safe-area-inset-bottom))',
+          paddingBottom: 'env(safe-area-inset-bottom)',
+          background: 'rgba(15, 23, 42, 0.85)',
+          borderTop: '1px solid rgba(255,255,255,0.08)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '0 16px',
+          boxShadow: '0 -8px 32px rgba(0,0,0,0.25)',
           zIndex: 50,
+          alignItems: 'stretch',
+          justifyContent: 'space-around',
         }}
       >
-        <span style={{ fontWeight: 700, color: '#67E8F9', fontSize: '0.95rem' }}>FinanceTracker</span>
-        {/* Hamburger */}
+        {NAV.map((item) => {
+          const active = pathname.startsWith(item.href);
+          return (
+            <a
+              key={item.href}
+              href={item.href}
+              aria-label={item.label}
+              style={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '2px',
+                textDecoration: 'none',
+                color: active ? 'var(--accent)' : 'var(--text-muted)',
+                position: 'relative',
+              }}
+            >
+              {active && (
+                <span style={{
+                  position: 'absolute',
+                  top: 0,
+                  width: '28px',
+                  height: '2.5px',
+                  borderRadius: '0 0 4px 4px',
+                  background: 'var(--accent)',
+                  boxShadow: '0 0 8px rgba(56,189,248,0.7)',
+                }} />
+              )}
+              <item.icon
+                size={23}
+                strokeWidth={active ? 2.4 : 2}
+                style={{
+                  filter: active ? 'drop-shadow(0 0 6px rgba(56,189,248,0.5))' : 'none',
+                  transition: 'transform 0.15s ease, stroke-width 0.15s ease',
+                  transform: active ? 'scale(1.08)' : 'scale(1)',
+                }}
+              />
+            </a>
+          );
+        })}
+
+        {/* Sign out as the last icon, matching the same tap target size */}
         <button
-          onClick={() => setDrawerOpen(true)}
+          onClick={handleSignOut}
+          aria-label="Sign out"
           style={{
-            width: '36px',
-            height: '36px',
+            flex: 1,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '5px',
-            border: '1px solid rgba(255,255,255,0.08)',
-            background: 'rgba(255,255,255,0.03)',
-            backdropFilter: 'blur(8px)',
-            cursor: 'pointer',
-            borderRadius: '6px',
+            border: 'none',
+            background: 'none',
+            color: 'var(--text-muted)',
+            fontFamily: 'inherit',
           }}
-          aria-label="Open menu"
         >
-          <span style={{ display: 'block', width: '20px', height: '2px', background: 'var(--text-muted)', borderRadius: '2px' }} />
-          <span style={{ display: 'block', width: '20px', height: '2px', background: 'var(--text-muted)', borderRadius: '2px' }} />
-          <span style={{ display: 'block', width: '20px', height: '2px', background: 'var(--text-muted)', borderRadius: '2px' }} />
+          <LogOut size={22} strokeWidth={2} />
         </button>
-      </header>
-
-      {/* ── Mobile drawer overlay ────────────────────────────── */}
-      {drawerOpen && (
-        <div
-          className="mobile-drawer-backdrop"
-          onClick={() => setDrawerOpen(false)}
-          style={{
-            display: 'none',
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(2,6,23,0.65)',
-            backdropFilter: 'blur(4px)',
-            WebkitBackdropFilter: 'blur(4px)',
-            zIndex: 90,
-          }}
-        />
-      )}
-
-      <aside
-        className="mobile-drawer"
-        style={{
-          display: 'none',
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '260px',
-          height: '100vh',
-          background: 'rgba(15, 23, 42, 0.85)',
-          borderRight: '1px solid rgba(255,255,255,0.08)',
-          backdropFilter: 'blur(24px)',
-          WebkitBackdropFilter: 'blur(24px)',
-          flexDirection: 'column',
-          zIndex: 100,
-          transform: drawerOpen ? 'translateX(0)' : 'translateX(-100%)',
-          transition: 'transform 0.25s ease',
-        }}
-      >
-        {/* Drawer header */}
-        <div style={{
-          height: '56px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '0 16px',
-          borderBottom: '1px solid rgba(255,255,255,0.08)',
-          flexShrink: 0,
-        }}>
-          <span style={{ fontWeight: 700, color: '#67E8F9', fontSize: '0.95rem' }}>FinanceTracker</span>
-          <button
-            onClick={() => setDrawerOpen(false)}
-            style={{
-              width: '28px',
-              height: '28px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              border: 'none',
-              background: 'none',
-              color: 'var(--text-muted)',
-              cursor: 'pointer',
-              fontSize: '1.2rem',
-              borderRadius: '6px',
-            }}
-            aria-label="Close menu"
-          >
-            ✕
-          </button>
-        </div>
-
-        {/* Drawer nav */}
-        <nav style={{ flex: 1, padding: '12px 10px' }}>
-          {NAV.map((item) => {
-            const active = pathname.startsWith(item.href);
-            return (
-              <a
-                key={item.href}
-                href={item.href}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  padding: '11px 14px',
-                  borderRadius: '8px',
-                  marginBottom: '2px',
-                  fontWeight: active ? 600 : 400,
-                  color: active ? 'var(--text)' : 'var(--text-muted)',
-                  background: active ? 'rgba(56,189,248,0.12)' : 'transparent',
-                  border: active ? '1px solid rgba(56,189,248,0.20)' : '1px solid transparent',
-                  boxShadow: active ? '0 0 16px rgba(56,189,248,0.08)' : 'none',
-                  transition: 'all 0.18s ease',
-                  fontSize: '0.9rem',
-                  textDecoration: 'none',
-                }}
-              >
-                <span style={{ fontSize: '1.1rem', opacity: 0.85 }}>{item.icon}</span>
-                {item.label}
-              </a>
-            );
-          })}
-        </nav>
-
-        {/* Drawer sign out */}
-        <div style={{ padding: '10px', borderTop: '1px solid var(--border)', flexShrink: 0 }}>
-          <button
-            onClick={handleSignOut}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              padding: '11px 14px',
-              width: '100%',
-              borderRadius: '8px',
-              color: 'var(--text-muted)',
-              fontSize: '0.9rem',
-              cursor: 'pointer',
-              border: 'none',
-              background: 'none',
-              fontFamily: 'inherit',
-            }}
-          >
-            <span>↪</span> Sign out
-          </button>
-        </div>
-      </aside>
+      </nav>
 
       <style>{`
         @media (max-width: 768px) {
-          .desktop-sidebar               { display: none !important; }
-          .mobile-topbar                 { display: flex !important; }
-          .mobile-drawer                 { display: flex !important; }
-          .mobile-drawer-backdrop        { display: block !important; }
+          .desktop-sidebar     { display: none !important; }
+          .mobile-bottom-nav   { display: flex !important; }
         }
       `}</style>
     </>

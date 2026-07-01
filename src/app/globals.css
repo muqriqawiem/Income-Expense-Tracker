@@ -175,7 +175,8 @@ tr:hover td {
     margin-left: 0 !important;
 
     padding: 16px;
-    padding-top: 72px;
+    padding-top: 16px;
+    padding-bottom: calc(74px + env(safe-area-inset-bottom)); /* clears bottom nav */
 
     max-width: 100%;
   }
