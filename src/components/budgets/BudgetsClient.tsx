@@ -3,7 +3,9 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import { Pencil, Trash2 } from 'lucide-react';
 import { upsertBudget, deleteBudget, copyBudgetsFromMonth } from '@/data/budgets';
+import { setMaskMoneyPreference } from '@/data/preferences';
 import { formatRM } from '@/lib/utils/currency';
 import { formatMonthLabel } from '@/lib/utils/date';
 import Button from '@/components/ui/Button';
@@ -16,12 +18,83 @@ interface Props {
   categories: Category[];
   selectedMonth: string;
   monthOptions: string[];
+  initialMaskMoney: boolean;
 }
 
 function getPreviousMonth(yearMonth: string): string {
   const [year, month] = yearMonth.split('-').map(Number);
   const prev = new Date(year, month - 2, 1);
   return `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, '0')}`;
+}
+
+const MASK_PLACEHOLDER = 'RM ••••';
+
+function displayRM(value: number, masked: boolean): string {
+  return masked ? MASK_PLACEHOLDER : formatRM(value);
+}
+
+// ── Eye / EyeOff icons (matches DashboardClient) ────────────────
+
+function EyeIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+}
+
+function EyeOffIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+      <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 11 7 11 7a13.16 13.16 0 0 1-3.17 4.34M6.61 6.61C3.35 8.36 1 12 1 12s4 7 11 7a10.4 10.4 0 0 0 5.05-1.25" />
+      <line x1="1" y1="1" x2="23" y2="23" />
+    </svg>
+  );
+}
+
+function MaskToggleButton({ masked, onClick }: { masked: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      title={masked ? 'Show amounts' : 'Hide amounts'}
+      aria-label={masked ? 'Show amounts' : 'Hide amounts'}
+      aria-pressed={masked}
+      style={{
+        width: '38px',
+        height: '38px',
+        borderRadius: '12px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: masked ? 'var(--accent)' : 'var(--text-muted)',
+        background: masked ? 'var(--accent-soft)' : 'rgba(255,255,255,0.04)',
+        border: masked ? '1px solid rgba(56,189,248,0.30)' : '1px solid var(--border)',
+        backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)',
+        cursor: 'pointer',
+        transition: 'background 0.15s ease, color 0.15s ease, border-color 0.15s ease',
+        flexShrink: 0,
+      }}
+      onMouseEnter={(e) => {
+        const el = e.currentTarget as HTMLButtonElement;
+        if (!masked) {
+          el.style.background = 'rgba(255,255,255,0.08)';
+          el.style.color = 'var(--text)';
+        }
+      }}
+      onMouseLeave={(e) => {
+        const el = e.currentTarget as HTMLButtonElement;
+        if (!masked) {
+          el.style.background = 'rgba(255,255,255,0.04)';
+          el.style.color = 'var(--text-muted)';
+        }
+      }}
+    >
+      {masked ? <EyeOffIcon /> : <EyeIcon />}
+    </button>
+  );
 }
 
 interface SummaryCardProps {
@@ -81,11 +154,18 @@ function SummaryCard({ label, value, glowColor }: SummaryCardProps) {
   );
 }
 
+const ICON_BTN_STYLE: React.CSSProperties = {
+  padding: '6px',
+  width: '30px',
+  height: '30px',
+};
+
 export default function BudgetsClient({
   budgets,
   categories,
   selectedMonth,
   monthOptions,
+  initialMaskMoney,
 }: Props) {
   const router = useRouter();
   const pathname = usePathname();
@@ -100,6 +180,17 @@ export default function BudgetsClient({
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [copying, setCopying] = useState(false);
+  const [masked, setMasked] = useState(initialMaskMoney);
+
+  async function toggleMask() {
+    const next = !masked;
+    setMasked(next); // optimistic update — instant UI feedback
+    try {
+      await setMaskMoneyPreference(next);
+    } catch {
+      setMasked(!next);
+    }
+  }
 
   function switchMonth(month: string) {
     router.push(`${pathname}?month=${month}`);
@@ -200,7 +291,7 @@ export default function BudgetsClient({
 
   return (
     <>
-      {/* Month selector + actions */}
+      {/* Month selector + mask toggle + actions */}
       <div className="filters-bar" style={{ marginBottom: '20px' }}>
         <div className="form-group">
           <label className="form-label">Month</label>
@@ -212,6 +303,8 @@ export default function BudgetsClient({
             ))}
           </select>
         </div>
+
+        <MaskToggleButton masked={masked} onClick={toggleMask} />
 
         <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
           {budgets.length === 0 && (
@@ -238,7 +331,7 @@ export default function BudgetsClient({
       <div className="overview-grid" style={{ marginBottom: '24px' }}>
         <SummaryCard
           label="Total Allocated"
-          value={formatRM(totalBudget)}
+          value={displayRM(totalBudget, masked)}
           glowColor="rgba(56, 189, 248, 0.15)"
         />
         <SummaryCard
@@ -299,16 +392,30 @@ export default function BudgetsClient({
                     </td>
 
                     <td className="text-right font-mono" style={{ fontWeight: 600 }}>
-                      {formatRM(Number(b.allocated_budget))}
+                      {displayRM(Number(b.allocated_budget), masked)}
                     </td>
 
                     <td>
                       <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
-                        <Button size="sm" variant="ghost" onClick={() => openEdit(b)}>
-                          Edit
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          title="Edit"
+                          aria-label="Edit"
+                          style={ICON_BTN_STYLE}
+                          onClick={() => openEdit(b)}
+                        >
+                          <Pencil size={14} />
                         </Button>
-                        <Button size="sm" variant="danger" onClick={() => setDeleteTarget(b)}>
-                          Del
+                        <Button
+                          size="sm"
+                          variant="danger"
+                          title="Delete"
+                          aria-label="Delete"
+                          style={ICON_BTN_STYLE}
+                          onClick={() => setDeleteTarget(b)}
+                        >
+                          <Trash2 size={14} />
                         </Button>
                       </div>
                     </td>

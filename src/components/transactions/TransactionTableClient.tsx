@@ -1,6 +1,7 @@
 // src/components/transactions/TransactionTableClient.tsx
 'use client';
 
+import { Pencil, Trash2 } from 'lucide-react';
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import {
@@ -259,11 +260,25 @@ export default function TransactionTableClient({
 
                     <td>
                       <div style={{ display: 'flex', gap: '6px' }}>
-                        <Button size="sm" variant="ghost" onClick={() => openEdit(t)}>
-                          Edit
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          title="Edit"
+                          aria-label="Edit"
+                          style={{ padding: '6px', width: '30px', height: '30px' }}
+                          onClick={() => openEdit(t)}
+                        >
+                          <Pencil size={14} />
                         </Button>
-                        <Button size="sm" variant="danger" onClick={() => setDeleteTarget(t)}>
-                          Del
+                        <Button
+                          size="sm"
+                          variant="danger"
+                          title="Delete"
+                          aria-label="Delete"
+                          style={{ padding: '6px', width: '30px', height: '30px' }}
+                          onClick={() => setDeleteTarget(t)}
+                        >
+                          <Trash2 size={14} />
                         </Button>
                       </div>
                     </td>

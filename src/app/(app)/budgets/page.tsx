@@ -1,6 +1,7 @@
 // src/app/(app)/budgets/page.tsx
 import { getBudgets } from '@/data/budgets';
 import { getCategories } from '@/data/categories';
+import { getMaskMoneyPreference } from '@/data/preferences';
 import { generateMonthOptions, currentYearMonth } from '@/lib/utils/date';
 import BudgetsClient from '@/components/budgets/BudgetsClient';
 
@@ -13,9 +14,10 @@ export default async function BudgetsPage({ searchParams }: Props) {
   const selectedMonth = params.month ?? currentYearMonth();
   const monthOptions = generateMonthOptions();
 
-  const [budgets, categories] = await Promise.all([
+  const [budgets, categories, initialMaskMoney] = await Promise.all([
     getBudgets(selectedMonth),
     getCategories(true),
+    getMaskMoneyPreference(),
   ]);
 
   return (
@@ -28,6 +30,7 @@ export default async function BudgetsPage({ searchParams }: Props) {
         categories={categories}
         selectedMonth={selectedMonth}
         monthOptions={monthOptions}
+        initialMaskMoney={initialMaskMoney}
       />
     </>
   );

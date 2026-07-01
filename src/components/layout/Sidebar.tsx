@@ -12,6 +12,8 @@ import {
 import { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
+import Link from 'next/link';
 
 const NAV: { href: string; label: string; icon: LucideIcon }[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -28,10 +30,16 @@ export default function Sidebar() {
   const router = useRouter();
 
   // Desktop: collapsed state
-  const [collapsed, setCollapsed] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    return localStorage.getItem('sidebar-collapsed') === 'true';
-  });
+  const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(() => {
+    setCollapsed(
+      localStorage.getItem('sidebar-collapsed') === 'true'
+    );
+  }, []);
+
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   // Sync collapsed pref to localStorage
   useEffect(() => {
@@ -43,11 +51,21 @@ export default function Sidebar() {
     );
   }, [collapsed]);
 
+  function requestSignOut() {
+    setShowLogoutConfirm(true);
+  }
+
   async function handleSignOut() {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    router.push('/login');
-    router.refresh();
+    setLoggingOut(true);
+    try {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+      router.push('/login');
+      router.refresh();
+    } finally {
+      setLoggingOut(false);
+      setShowLogoutConfirm(false);
+    }
   }
 
   const sidebarW = collapsed ? COLLAPSED_W : EXPANDED_W;
@@ -114,7 +132,7 @@ export default function Sidebar() {
               (e.currentTarget as HTMLButtonElement).style.color = 'var(--text)';
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
+              (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.03)';
               (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)';
             }}
           >
@@ -126,8 +144,9 @@ export default function Sidebar() {
         <nav style={{ flex: 1, padding: '12px 8px', overflowY: 'auto', overflowX: 'hidden' }}>
           {NAV.map((item) => {
             const active = pathname.startsWith(item.href);
+
             return (
-              <a
+              <Link
                 key={item.href}
                 href={item.href}
                 title={collapsed ? item.label : undefined}
@@ -141,9 +160,15 @@ export default function Sidebar() {
                   marginBottom: '2px',
                   fontWeight: active ? 600 : 400,
                   color: active ? 'var(--text)' : 'var(--text-muted)',
-                  background: active ? 'rgba(56,189,248,0.12)' : 'transparent',
-                  border: active ? '1px solid rgba(56,189,248,0.20)' : '1px solid transparent',
-                  boxShadow: active ? '0 0 16px rgba(56,189,248,0.08)' : 'none',
+                  background: active
+                    ? 'rgba(56,189,248,0.12)'
+                    : 'transparent',
+                  border: active
+                    ? '1px solid rgba(56,189,248,0.20)'
+                    : '1px solid transparent',
+                  boxShadow: active
+                    ? '0 0 16px rgba(56,189,248,0.08)'
+                    : 'none',
                   transition: 'all 0.18s ease',
                   fontSize: '0.875rem',
                   whiteSpace: 'nowrap',
@@ -153,7 +178,7 @@ export default function Sidebar() {
               >
                 <item.icon size={19} strokeWidth={2} style={{ opacity: 0.9, flexShrink: 0 }} />
                 {!collapsed && item.label}
-              </a>
+              </Link>
             );
           })}
         </nav>
@@ -161,7 +186,7 @@ export default function Sidebar() {
         {/* Sign out */}
         <div style={{ padding: '8px', borderTop: '1px solid var(--border)', flexShrink: 0 }}>
           <button
-            onClick={handleSignOut}
+            onClick={requestSignOut}
             title={collapsed ? 'Sign out' : undefined}
             style={{
               display: 'flex',
@@ -192,7 +217,7 @@ export default function Sidebar() {
             {!collapsed && ' Sign out'}
           </button>
         </div>
-      </aside>
+      </aside >
 
       {/* ── Mobile bottom tab bar (Instagram-style, icons only) ── */}
       <nav
@@ -215,52 +240,57 @@ export default function Sidebar() {
           justifyContent: 'space-around',
         }}
       >
-        {NAV.map((item) => {
-          const active = pathname.startsWith(item.href);
-          return (
-            <a
-              key={item.href}
-              href={item.href}
-              aria-label={item.label}
-              style={{
-                flex: 1,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '2px',
-                textDecoration: 'none',
-                color: active ? 'var(--accent)' : 'var(--text-muted)',
-                position: 'relative',
-              }}
-            >
-              {active && (
-                <span style={{
-                  position: 'absolute',
-                  top: 0,
-                  width: '28px',
-                  height: '2.5px',
-                  borderRadius: '0 0 4px 4px',
-                  background: 'var(--accent)',
-                  boxShadow: '0 0 8px rgba(56,189,248,0.7)',
-                }} />
-              )}
-              <item.icon
-                size={23}
-                strokeWidth={active ? 2.4 : 2}
+        {
+          NAV.map((item) => {
+            const active = pathname.startsWith(item.href);
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-label={item.label}
                 style={{
-                  filter: active ? 'drop-shadow(0 0 6px rgba(56,189,248,0.5))' : 'none',
-                  transition: 'transform 0.15s ease, stroke-width 0.15s ease',
-                  transform: active ? 'scale(1.08)' : 'scale(1)',
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '2px',
+                  textDecoration: 'none',
+                  color: active ? 'var(--accent)' : 'var(--text-muted)',
+                  position: 'relative',
                 }}
-              />
-            </a>
-          );
-        })}
+              >
+                {active && (
+                  <span
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      width: '28px',
+                      height: '2.5px',
+                      borderRadius: '0 0 4px 4px',
+                      background: 'var(--accent)',
+                      boxShadow: '0 0 8px rgba(56,189,248,0.7)',
+                    }}
+                  />
+                )}
+
+                <item.icon
+                  size={23}
+                  strokeWidth={active ? 2.4 : 2}
+                  style={{
+                    filter: active ? 'drop-shadow(0 0 6px rgba(56,189,248,0.5))' : 'none',
+                    transition: 'transform 0.15s ease, stroke-width 0.15s ease',
+                    transform: active ? 'scale(1.08)' : 'scale(1)',
+                  }}
+                />
+              </Link>
+            );
+          })}
 
         {/* Sign out as the last icon, matching the same tap target size */}
         <button
-          onClick={handleSignOut}
+          onClick={requestSignOut}
           aria-label="Sign out"
           style={{
             flex: 1,
@@ -276,7 +306,19 @@ export default function Sidebar() {
         >
           <LogOut size={22} strokeWidth={2} />
         </button>
-      </nav>
+      </nav >
+
+      {showLogoutConfirm && (
+        <ConfirmDialog
+          title="Sign out?"
+          message="You'll need to sign in again to access your account."
+          confirmLabel="Sign out"
+          onConfirm={handleSignOut}
+          onCancel={() => setShowLogoutConfirm(false)}
+          loading={loggingOut}
+        />
+      )
+      }
 
       <style>{`
         @media (max-width: 768px) {

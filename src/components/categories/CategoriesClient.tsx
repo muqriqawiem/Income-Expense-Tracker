@@ -3,6 +3,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { Pencil, Power, Trash2 } from 'lucide-react';
 import {
   createCategory,
   updateCategory,
@@ -82,6 +83,12 @@ function CategoryPill({ color, name, inactive }: { color: string; name: string; 
   );
 }
 
+const ICON_BTN_STYLE: React.CSSProperties = {
+  padding: '6px',
+  width: '30px',
+  height: '30px',
+};
+
 export default function CategoriesClient({ categories }: Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -156,7 +163,7 @@ export default function CategoriesClient({ categories }: Props) {
     }
   }
 
-  const active   = categories.filter((c) => c.is_active);
+  const active = categories.filter((c) => c.is_active);
   const inactive = categories.filter((c) => !c.is_active);
 
   const TypeSelect = ({
@@ -199,7 +206,7 @@ export default function CategoriesClient({ categories }: Props) {
               <tr>
                 <th>Name</th>
                 <th>Type</th>
-                <th style={{ width: '160px' }}></th>
+                <th style={{ width: '140px' }}></th>
               </tr>
             </thead>
             <tbody>
@@ -216,51 +223,60 @@ export default function CategoriesClient({ categories }: Props) {
                       <Button
                         size="sm"
                         variant="ghost"
+                        title="Edit"
+                        aria-label="Edit"
+                        style={ICON_BTN_STYLE}
                         onClick={() => {
-                        setEditTarget(cat);
-                        setEditName(cat.name);
-                        setEditColor(cat.color);
-                        setEditType(cat.type ?? 'Expense');
-                        setError('');
-                      }}
-                    >
-                      Edit
-                    </Button>
+                          setEditTarget(cat);
+                          setEditName(cat.name);
+                          setEditColor(cat.color);
+                          setEditType(cat.type ?? 'Expense');
+                          setError('');
+                        }}
+                      >
+                        <Pencil size={14} />
+                      </Button>
 
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      onClick={() => handleToggleActive(cat)}
-                    >
-                      Deactivate
-                    </Button>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        title="Deactivate"
+                        aria-label="Deactivate"
+                        style={ICON_BTN_STYLE}
+                        onClick={() => handleToggleActive(cat)}
+                      >
+                        <Power size={14} />
+                      </Button>
 
-                    <Button
-                      size="sm"
-                      variant="danger"
-                      onClick={() => setDeleteTarget(cat)}
-                    >
-                      Del
-                    </Button>
-                  </div>
-                </td>
-              </tr>
-            ))}
+                      <Button
+                        size="sm"
+                        variant="danger"
+                        title="Delete"
+                        aria-label="Delete"
+                        style={ICON_BTN_STYLE}
+                        onClick={() => setDeleteTarget(cat)}
+                      >
+                        <Trash2 size={14} />
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
 
-            {active.length === 0 && (
-              <tr>
-                <td
-                  colSpan={3}
-                  className="text-center text-muted"
-                  style={{ padding: '20px' }}
-                >
-                  No active categories.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+              {active.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={3}
+                    className="text-center text-muted"
+                    style={{ padding: '20px' }}
+                  >
+                    No active categories.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {inactive.length > 0 && (
@@ -276,7 +292,7 @@ export default function CategoriesClient({ categories }: Props) {
                 <tr>
                   <th>Name</th>
                   <th>Type</th>
-                  <th style={{ width: '120px' }}></th>
+                  <th style={{ width: '90px' }}></th>
                 </tr>
               </thead>
 
@@ -300,17 +316,23 @@ export default function CategoriesClient({ categories }: Props) {
                         <Button
                           size="sm"
                           variant="secondary"
+                          title="Activate"
+                          aria-label="Activate"
+                          style={ICON_BTN_STYLE}
                           onClick={() => handleToggleActive(cat)}
                         >
-                          Activate
+                          <Power size={14} />
                         </Button>
 
                         <Button
                           size="sm"
                           variant="danger"
+                          title="Delete"
+                          aria-label="Delete"
+                          style={ICON_BTN_STYLE}
                           onClick={() => setDeleteTarget(cat)}
                         >
-                          Del
+                          <Trash2 size={14} />
                         </Button>
                       </div>
                     </td>

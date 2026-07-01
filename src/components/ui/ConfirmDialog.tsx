@@ -10,6 +10,8 @@ interface Props {
   onConfirm: () => void;
   onCancel: () => void;
   loading?: boolean;
+  confirmLabel?: string;
+  confirmVariant?: 'danger' | 'primary';
 }
 
 export default function ConfirmDialog({
@@ -18,6 +20,8 @@ export default function ConfirmDialog({
   onConfirm,
   onCancel,
   loading,
+  confirmLabel = 'Delete',
+  confirmVariant = 'danger',
 }: Props) {
   return (
     <Modal title={title} onClose={onCancel}>
@@ -26,8 +30,8 @@ export default function ConfirmDialog({
         <Button variant="ghost" onClick={onCancel}>
           Cancel
         </Button>
-        <Button variant="danger" onClick={onConfirm} loading={loading}>
-          Delete
+        <Button variant={confirmVariant} onClick={onConfirm} loading={loading}>
+          {confirmLabel}
         </Button>
       </div>
     </Modal>
