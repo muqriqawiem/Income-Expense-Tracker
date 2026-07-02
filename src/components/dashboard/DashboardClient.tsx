@@ -8,7 +8,8 @@ import MonthSelector from '@/components/dashboard/MonthSelector';
 import BudgetSummaryTable from '@/components/dashboard/BudgetSummaryTable';
 import SpendingChart from '@/components/dashboard/SpendingChart';
 import DrilldownPanel, { type DrilldownTarget } from '@/components/dashboard/DrilldownPanel';
-import type { FinancialOverview, BudgetSummaryRow } from '@/types';
+import QuickAddFab from '@/components/dashboard/QuickAddFab';
+import type { FinancialOverview, BudgetSummaryRow, Category } from '@/types';
 
 interface Props {
   overview: FinancialOverview;
@@ -18,6 +19,7 @@ interface Props {
   prevMonth: string;
   monthOptions: string[];
   initialMaskMoney: boolean;
+  categories: Category[];
 }
 
 // ── helpers ────────────────────────────────────────────────────
@@ -226,7 +228,7 @@ function OverviewCard({
 // ── DashboardClient ────────────────────────────────────────────
 
 export default function DashboardClient({
-  overview, prevOverview, budgetRows, selectedMonth, prevMonth, monthOptions, initialMaskMoney,
+  overview, prevOverview, budgetRows, selectedMonth, prevMonth, monthOptions, initialMaskMoney, categories,
 }: Props) {
   const [drilldown, setDrilldown] = useState<DrilldownTarget | null>(null);
   const [masked, setMasked] = useState(initialMaskMoney);
@@ -319,6 +321,8 @@ export default function DashboardClient({
         overview={overview}
         onClose={() => setDrilldown(null)}
       />
+
+      <QuickAddFab categories={categories} />
     </>
   );
 }

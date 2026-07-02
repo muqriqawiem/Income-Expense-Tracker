@@ -1,6 +1,7 @@
 // src/app/(app)/dashboard/page.tsx
 import { getFinancialOverview, getBudgetSummaryRows } from '@/data/summary';
 import { getMaskMoneyPreference } from '@/data/preferences';
+import { getCategories } from '@/data/categories';
 import { generateMonthOptions, currentYearMonth } from '@/lib/utils/date';
 
 import DashboardClient from '@/components/dashboard/DashboardClient';
@@ -22,11 +23,12 @@ export default async function DashboardPage({ searchParams }: Props) {
   const monthOptions = generateMonthOptions();
 
   // Server-side fetch — HTML arrives pre-rendered, no client useEffect wait
-  const [overview, prevOverview, budgetRows, initialMaskMoney] = await Promise.all([
+  const [overview, prevOverview, budgetRows, initialMaskMoney, categories] = await Promise.all([
     getFinancialOverview(selectedMonth),
     getFinancialOverview(prevMonth),
     getBudgetSummaryRows(selectedMonth),
     getMaskMoneyPreference(),
+    getCategories(true), // active only — same call TransactionsPage already makes
   ]);
 
   return (
@@ -38,6 +40,7 @@ export default async function DashboardPage({ searchParams }: Props) {
       prevMonth={prevMonth}
       monthOptions={monthOptions}
       initialMaskMoney={initialMaskMoney}
+      categories={categories}
     />
   );
 }
