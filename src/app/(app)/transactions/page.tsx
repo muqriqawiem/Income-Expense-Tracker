@@ -1,6 +1,6 @@
 // src/app/(app)/transactions/page.tsx
 import { getTransactions } from '@/data/transactions';
-import { getCategories } from '@/data/categories';
+import { getCategoriesByUsage } from '@/data/categories';
 import { generateMonthOptions, currentYearMonth } from '@/lib/utils/date';
 import TransactionFilters from '@/components/transactions/TransactionFilters';
 import TransactionTableClient from '@/components/transactions/TransactionTableClient';
@@ -20,7 +20,7 @@ export default async function TransactionsPage({ searchParams }: Props) {
       year_month: selectedMonth,
       type: selectedType,
     }),
-    getCategories(true),
+    getCategoriesByUsage(true),
   ]);
 
   const monthOptions = generateMonthOptions();
