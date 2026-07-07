@@ -42,6 +42,15 @@ function shortMonth(ym: string): string {
   return d.toLocaleDateString('en-MY', { month: 'short', year: '2-digit' });
 }
 
+function formatWeekRange(start: string, end: string): string {
+  const [sy, sm, sd] = start.split('-').map(Number);
+  const [ey, em, ed] = end.split('-').map(Number);
+  const startDate = new Date(sy, sm - 1, sd);
+  const endDate = new Date(ey, em - 1, ed);
+  const fmt = (d: Date) => d.toLocaleDateString('en-MY', { month: 'short', day: 'numeric' });
+  return `${fmt(startDate)} – ${fmt(endDate)}`;
+}
+
 // ── Mini bar chart ─────────────────────────────────────────────
 
 function MiniBar({ label, value, max, color, sublabel }: {
@@ -207,15 +216,15 @@ function IncomeView({ target, onDrillCategory }: {
       {cats.length === 0
         ? <EmptyNote>No income recorded this month.</EmptyNote>
         : cats.map((c) => (
-            <MiniBar
-              key={c.category_id ?? 'none'}
-              label={c.category_name}
-              value={c.amount}
-              max={total}
-              color={c.category_color}
-              sublabel={`${((c.amount / total) * 100).toFixed(1)}%`}
-            />
-          ))
+          <MiniBar
+            key={c.category_id ?? 'none'}
+            label={c.category_name}
+            value={c.amount}
+            max={total}
+            color={c.category_color}
+            sublabel={`${((c.amount / total) * 100).toFixed(1)}%`}
+          />
+        ))
       }
       <Divider />
       <SectionHeading>6-Month Income Trend</SectionHeading>
@@ -260,20 +269,20 @@ function ExpenseView({ target, onDrillCategory }: {
       {cats.length === 0
         ? <EmptyNote>No expenses recorded this month.</EmptyNote>
         : cats.map((c) => (
-            <div
-              key={c.category_id ?? 'none'}
-              onClick={() => c.category_id && onDrillCategory(c)}
-              style={{ cursor: c.category_id ? 'pointer' : 'default' }}
-            >
-              <MiniBar
-                label={c.category_name}
-                value={c.amount}
-                max={total}
-                color={c.category_color}
-                sublabel={`${((c.amount / total) * 100).toFixed(1)}%`}
-              />
-            </div>
-          ))
+          <div
+            key={c.category_id ?? 'none'}
+            onClick={() => c.category_id && onDrillCategory(c)}
+            style={{ cursor: c.category_id ? 'pointer' : 'default' }}
+          >
+            <MiniBar
+              label={c.category_name}
+              value={c.amount}
+              max={total}
+              color={c.category_color}
+              sublabel={`${((c.amount / total) * 100).toFixed(1)}%`}
+            />
+          </div>
+        ))
       }
       <Divider />
       <SectionHeading>6-Month Expense Trend</SectionHeading>
@@ -416,14 +425,15 @@ function ExpenseCategoryView({ target }: {
       {weekly.filter((w) => w.amount > 0).length === 0
         ? <EmptyNote>No weekly data.</EmptyNote>
         : weekly.map((w) => (
-            <MiniBar
-              key={w.week}
-              label={w.week}
-              value={w.amount}
-              max={maxWeek}
-              color={target.category_color}
-            />
-          ))
+          <MiniBar
+            key={w.week}
+            label={w.week}
+            value={w.amount}
+            max={maxWeek}
+            color={target.category_color}
+            sublabel={formatWeekRange(w.start, w.end)}
+          />
+        ))
       }
 
       <Divider />
@@ -492,8 +502,8 @@ function BudgetCategoryView({ target }: {
       {weekly.filter((w) => w.amount > 0).length === 0
         ? <EmptyNote>No spending this month.</EmptyNote>
         : weekly.map((w) => (
-            <MiniBar key={w.week} label={w.week} value={w.amount} max={maxWeek} color={category_color} />
-          ))
+          <MiniBar key={w.week} label={w.week} value={w.amount} max={maxWeek} color={category_color} sublabel={formatWeekRange(w.start, w.end)} />
+        ))
       }
 
       <Divider />
@@ -701,7 +711,7 @@ export default function DrilldownPanel({ target, overview, onClose }: Props) {
           {current && (() => {
             switch (current.kind) {
               case 'income':
-                return <IncomeView target={current} onDrillCategory={() => {}} />;
+                return <IncomeView target={current} onDrillCategory={() => { }} />;
               case 'expense':
                 return <ExpenseView target={current} onDrillCategory={handleDrillExpenseCategory} />;
               case 'remaining':
