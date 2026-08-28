@@ -2,29 +2,23 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Pencil, Trash2 } from 'lucide-react';
 import { upsertBudget, deleteBudget, copyBudgetsFromMonth } from '@/data/budgets';
 import { setMaskMoneyPreference } from '@/data/preferences';
 import { formatRM } from '@/lib/utils/currency';
-import { formatMonthLabel } from '@/lib/utils/date';
+import { formatMonthLabel, previousYearMonth } from '@/lib/utils/date';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
+import MonthPicker from '@/components/ui/MonthPicker';
 import type { Budget, Category } from '@/types';
 
 interface Props {
   budgets: Budget[];
   categories: Category[];
   selectedMonth: string;
-  monthOptions: string[];
   initialMaskMoney: boolean;
-}
-
-function getPreviousMonth(yearMonth: string): string {
-  const [year, month] = yearMonth.split('-').map(Number);
-  const prev = new Date(year, month - 2, 1);
-  return `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, '0')}`;
 }
 
 const MASK_PLACEHOLDER = 'RM ••••';
@@ -164,11 +158,9 @@ export default function BudgetsClient({
   budgets,
   categories,
   selectedMonth,
-  monthOptions,
   initialMaskMoney,
 }: Props) {
   const router = useRouter();
-  const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
 
   const [showAdd, setShowAdd] = useState(false);
@@ -190,10 +182,6 @@ export default function BudgetsClient({
     } catch {
       setMasked(!next);
     }
-  }
-
-  function switchMonth(month: string) {
-    router.push(`${pathname}?month=${month}`);
   }
 
   function openAdd() {
@@ -266,7 +254,7 @@ export default function BudgetsClient({
     setCopying(true);
 
     try {
-      const prevMonth = getPreviousMonth(selectedMonth);
+      const prevMonth = previousYearMonth(selectedMonth);
       const copied = await copyBudgetsFromMonth(prevMonth, selectedMonth);
 
       if (copied.length === 0) {
@@ -293,16 +281,7 @@ export default function BudgetsClient({
     <>
       {/* Month selector + mask toggle + actions */}
       <div className="filters-bar" style={{ marginBottom: '20px' }}>
-        <div className="form-group">
-          <label className="form-label">Month</label>
-          <select value={selectedMonth} onChange={(e) => switchMonth(e.target.value)}>
-            {monthOptions.map((m) => (
-              <option key={m} value={m}>
-                {formatMonthLabel(m)}
-              </option>
-            ))}
-          </select>
-        </div>
+        <MonthPicker selectedMonth={selectedMonth} label="Month" />
 
         <MaskToggleButton masked={masked} onClick={toggleMask} />
 

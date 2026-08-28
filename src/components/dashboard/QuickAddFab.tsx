@@ -5,27 +5,30 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Plus } from 'lucide-react';
 import { createTransaction } from '@/data/transactions';
-import { todayISO } from '@/lib/utils/date';
+import { defaultDateForMonth } from '@/lib/utils/date';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
 import type { Category, TransactionFormData } from '@/types';
 
 interface Props {
   categories: Category[];
+  selectedMonth: string;
 }
 
-const EMPTY_FORM: TransactionFormData = {
-  transaction_date: todayISO(),
-  type: 'Expense',
-  category_id: '',
-  amount: '',
-  description: '',
-};
+function emptyForm(selectedMonth: string): TransactionFormData {
+  return {
+    transaction_date: defaultDateForMonth(selectedMonth),
+    type: 'Expense',
+    category_id: '',
+    amount: '',
+    description: '',
+  };
+}
 
-export default function QuickAddFab({ categories }: Props) {
+export default function QuickAddFab({ categories, selectedMonth }: Props) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState<TransactionFormData>(EMPTY_FORM);
+  const [form, setForm] = useState<TransactionFormData>(() => emptyForm(selectedMonth));
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -36,7 +39,7 @@ export default function QuickAddFab({ categories }: Props) {
   });
 
   function openModal() {
-    setForm({ ...EMPTY_FORM, transaction_date: todayISO() });
+    setForm(emptyForm(selectedMonth));
     setError('');
     setOpen(true);
   }

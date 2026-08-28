@@ -2,7 +2,7 @@
 import { getBudgets } from '@/data/budgets';
 import { getCategories } from '@/data/categories';
 import { getMaskMoneyPreference } from '@/data/preferences';
-import { generateMonthOptions, currentYearMonth } from '@/lib/utils/date';
+import { resolveYearMonth } from '@/lib/utils/date';
 import BudgetsClient from '@/components/budgets/BudgetsClient';
 
 interface Props {
@@ -11,8 +11,7 @@ interface Props {
 
 export default async function BudgetsPage({ searchParams }: Props) {
   const params = await searchParams;
-  const selectedMonth = params.month ?? currentYearMonth();
-  const monthOptions = generateMonthOptions();
+  const selectedMonth = resolveYearMonth(params.month);
 
   const [budgets, categories, initialMaskMoney] = await Promise.all([
     getBudgets(selectedMonth),
@@ -29,7 +28,6 @@ export default async function BudgetsPage({ searchParams }: Props) {
         budgets={budgets}
         categories={categories}
         selectedMonth={selectedMonth}
-        monthOptions={monthOptions}
         initialMaskMoney={initialMaskMoney}
       />
     </>

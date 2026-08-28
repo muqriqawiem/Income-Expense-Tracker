@@ -2,7 +2,7 @@
 import { getFinancialOverview, getBudgetSummaryRows } from '@/data/summary';
 import { getMaskMoneyPreference } from '@/data/preferences';
 import { getCategoriesByUsage } from '@/data/categories';
-import { generateMonthOptions, currentYearMonth } from '@/lib/utils/date';
+import { previousYearMonth, resolveYearMonth } from '@/lib/utils/date';
 
 import DashboardClient from '@/components/dashboard/DashboardClient';
 
@@ -10,17 +10,10 @@ interface Props {
   searchParams: Promise<{ month?: string }>;
 }
 
-function getPreviousYearMonth(yearMonth: string): string {
-  const [year, month] = yearMonth.split('-').map(Number);
-  const prev = new Date(year, month - 2, 1);
-  return `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, '0')}`;
-}
-
 export default async function DashboardPage({ searchParams }: Props) {
   const params = await searchParams;
-  const selectedMonth = params.month ?? currentYearMonth();
-  const prevMonth = getPreviousYearMonth(selectedMonth);
-  const monthOptions = generateMonthOptions();
+  const selectedMonth = resolveYearMonth(params.month);
+  const prevMonth = previousYearMonth(selectedMonth);
 
   // Server-side fetch — HTML arrives pre-rendered, no client useEffect wait
   const [overview, prevOverview, budgetRows, initialMaskMoney, categories] = await Promise.all([
@@ -38,7 +31,6 @@ export default async function DashboardPage({ searchParams }: Props) {
       budgetRows={budgetRows}
       selectedMonth={selectedMonth}
       prevMonth={prevMonth}
-      monthOptions={monthOptions}
       initialMaskMoney={initialMaskMoney}
       categories={categories}
     />

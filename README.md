@@ -107,9 +107,9 @@ src/
 │   ├── (auth)/        # Login + Signup (no sidebar)
 │   └── (app)/         # Dashboard, Transactions, Categories, Budgets
 ├── components/         # UI components
-│   ├── ui/            # Button, Modal, ConfirmDialog
+│   ├── ui/            # Button, Modal, ConfirmDialog, MonthPicker
 │   ├── layout/        # Sidebar
-│   ├── dashboard/     # MonthSelector, BudgetSummaryTable
+│   ├── dashboard/     # Dashboard summaries and drilldowns
 │   ├── transactions/  # TransactionTableClient, TransactionFilters
 │   ├── categories/    # CategoriesClient
 │   └── budgets/       # BudgetsClient

@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { formatRM } from '@/lib/utils/currency';
 import { setMaskMoneyPreference } from '@/data/preferences';
-import MonthSelector from '@/components/dashboard/MonthSelector';
+import MonthPicker from '@/components/ui/MonthPicker';
 import BudgetSummaryTable from '@/components/dashboard/BudgetSummaryTable';
 import SpendingChart from '@/components/dashboard/SpendingChart';
 import DrilldownPanel, { type DrilldownTarget } from '@/components/dashboard/DrilldownPanel';
@@ -17,7 +17,6 @@ interface Props {
   budgetRows: BudgetSummaryRow[];
   selectedMonth: string;
   prevMonth: string;
-  monthOptions: string[];
   initialMaskMoney: boolean;
   categories: Category[];
 }
@@ -228,7 +227,7 @@ function OverviewCard({
 // ── DashboardClient ────────────────────────────────────────────
 
 export default function DashboardClient({
-  overview, prevOverview, budgetRows, selectedMonth, prevMonth, monthOptions, initialMaskMoney, categories,
+  overview, prevOverview, budgetRows, selectedMonth, prevMonth, initialMaskMoney, categories,
 }: Props) {
   const [drilldown, setDrilldown] = useState<DrilldownTarget | null>(null);
   const [masked, setMasked] = useState(initialMaskMoney);
@@ -257,7 +256,7 @@ export default function DashboardClient({
         <h1 className="page-title">Dashboard</h1>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <MaskToggleButton masked={masked} onClick={toggleMask} />
-          <MonthSelector options={monthOptions} selected={selectedMonth} />
+          <MonthPicker selectedMonth={selectedMonth} />
         </div>
       </div>
 
@@ -322,7 +321,7 @@ export default function DashboardClient({
         onClose={() => setDrilldown(null)}
       />
 
-      <QuickAddFab categories={categories} />
+      <QuickAddFab categories={categories} selectedMonth={selectedMonth} />
     </>
   );
 }
