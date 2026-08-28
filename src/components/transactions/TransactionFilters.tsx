@@ -2,17 +2,15 @@
 'use client';
 
 import { useRouter, usePathname } from 'next/navigation';
-import { formatMonthLabel } from '@/lib/utils/date';
+import MonthPicker from '@/components/ui/MonthPicker';
 
 interface Props {
-  monthOptions: string[];
   selectedMonth: string;
   selectedType?: string;
   searchQuery: string;
 }
 
 export default function TransactionFilters({
-  monthOptions,
   selectedMonth,
   selectedType,
   searchQuery,
@@ -32,14 +30,7 @@ export default function TransactionFilters({
   return (
     <div className="filters-bar">
       {/* Month */}
-      <div className="form-group">
-        <label className="form-label">Month</label>
-        <select value={selectedMonth} onChange={(e) => update('month', e.target.value)}>
-          {monthOptions.map((m) => (
-            <option key={m} value={m}>{formatMonthLabel(m)}</option>
-          ))}
-        </select>
-      </div>
+      <MonthPicker selectedMonth={selectedMonth} label="Month" />
 
       {/* Type */}
       <div className="form-group">

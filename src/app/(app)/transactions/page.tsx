@@ -1,7 +1,7 @@
 // src/app/(app)/transactions/page.tsx
 import { getTransactions } from '@/data/transactions';
 import { getCategoriesByUsage } from '@/data/categories';
-import { generateMonthOptions, currentYearMonth } from '@/lib/utils/date';
+import { resolveYearMonth } from '@/lib/utils/date';
 import TransactionFilters from '@/components/transactions/TransactionFilters';
 import TransactionTableClient from '@/components/transactions/TransactionTableClient';
 import type { TransactionType } from '@/types';
@@ -12,7 +12,7 @@ interface Props {
 
 export default async function TransactionsPage({ searchParams }: Props) {
   const params = await searchParams;
-  const selectedMonth = params.month ?? currentYearMonth();
+  const selectedMonth = resolveYearMonth(params.month);
   const selectedType = params.type as TransactionType | undefined;
 
   const [transactions, categories] = await Promise.all([
@@ -22,8 +22,6 @@ export default async function TransactionsPage({ searchParams }: Props) {
     }),
     getCategoriesByUsage(true),
   ]);
-
-  const monthOptions = generateMonthOptions();
 
   const q = (params.q ?? '').toLowerCase();
   const filtered = q
@@ -42,7 +40,6 @@ export default async function TransactionsPage({ searchParams }: Props) {
       </div>
 
       <TransactionFilters
-        monthOptions={monthOptions}
         selectedMonth={selectedMonth}
         selectedType={selectedType}
         searchQuery={params.q ?? ''}

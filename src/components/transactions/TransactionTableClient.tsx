@@ -10,7 +10,7 @@ import {
   deleteTransaction,
 } from '@/data/transactions';
 import { formatRM } from '@/lib/utils/currency';
-import { todayISO } from '@/lib/utils/date';
+import { defaultDateForMonth } from '@/lib/utils/date';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
@@ -23,13 +23,15 @@ interface Props {
   selectedMonth: string;
 }
 
-const EMPTY_FORM: TransactionFormData = {
-  transaction_date: todayISO(),
-  type: 'Expense',
-  category_id: '',
-  amount: '',
-  description: '',
-};
+function emptyForm(selectedMonth: string): TransactionFormData {
+  return {
+    transaction_date: defaultDateForMonth(selectedMonth),
+    type: 'Expense',
+    category_id: '',
+    amount: '',
+    description: '',
+  };
+}
 
 export default function TransactionTableClient({
   transactions,
@@ -42,7 +44,7 @@ export default function TransactionTableClient({
   const [showForm, setShowForm] = useState(false);
   const [editTarget, setEditTarget] = useState<Transaction | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Transaction | null>(null);
-  const [form, setForm] = useState<TransactionFormData>(EMPTY_FORM);
+  const [form, setForm] = useState<TransactionFormData>(() => emptyForm(selectedMonth));
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -55,7 +57,7 @@ export default function TransactionTableClient({
   });
 
   function openAdd() {
-    setForm({ ...EMPTY_FORM, transaction_date: todayISO() });
+    setForm(emptyForm(selectedMonth));
     setEditTarget(null);
     setError('');
     setShowForm(true);

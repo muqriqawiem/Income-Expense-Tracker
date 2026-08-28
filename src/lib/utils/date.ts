@@ -18,24 +18,24 @@ export function currentYearMonth(): string {
   return `${year}-${String(month).padStart(2, '0')}`;
 }
 
-export function toYearMonth(dateStr: string): string {
-  return dateStr.slice(0, 7);
+export function isValidYearMonth(value: string | null | undefined): value is string {
+  if (!value || !/^\d{4}-(0[1-9]|1[0-2])$/.test(value)) return false;
+  return Number(value.slice(0, 4)) >= 1000;
 }
 
-export function generateMonthOptions(startYear = 2026): string[] {
-  const { year: nowYear, month: nowMonth } = nowParts();
-  const options: string[] = [];
-  let year = startYear;
-  let month = 1;
-  while (year < nowYear || (year === nowYear && month <= nowMonth)) {
-    options.push(`${year}-${String(month).padStart(2, '0')}`);
-    month++;
-    if (month > 12) {
-      month = 1;
-      year++;
-    }
-  }
-  return options.reverse();
+export function resolveYearMonth(value: string | null | undefined): string {
+  return isValidYearMonth(value) ? value : currentYearMonth();
+}
+
+export function previousYearMonth(yearMonth: string): string {
+  const [year, month] = yearMonth.split('-').map(Number);
+  const previousYear = month === 1 ? year - 1 : year;
+  const previousMonth = month === 1 ? 12 : month - 1;
+  return `${previousYear}-${String(previousMonth).padStart(2, '0')}`;
+}
+
+export function toYearMonth(dateStr: string): string {
+  return dateStr.slice(0, 7);
 }
 
 export function formatMonthLabel(yearMonth: string): string {
@@ -47,4 +47,13 @@ export function formatMonthLabel(yearMonth: string): string {
 export function todayISO(): string {
   const { year, month, day } = nowParts();
   return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+
+export function defaultDateForMonth(yearMonth: string): string {
+  const selectedMonth = resolveYearMonth(yearMonth);
+  const [year, month] = selectedMonth.split('-').map(Number);
+  const { day } = nowParts();
+  const lastDay = new Date(year, month, 0).getDate();
+
+  return `${selectedMonth}-${String(Math.min(day, lastDay)).padStart(2, '0')}`;
 }
